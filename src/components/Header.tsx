@@ -1,15 +1,18 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
-import { Bell, LogIn, Home, Grid3X3, User } from "lucide-react";
+import { Bell, LogIn, LogOut, Home, Grid3X3, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import qualologyLogo from "@/assets/qualogy-logo.png";
 import NotificationsPopup from "./NotificationsPopup";
 import LoginModal from "./LoginModal";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const Header = () => {
   const location = useLocation();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const { user, signOut } = useAuth();
 
   const navItems = [
     { path: "/", label: "Home", icon: Home },
@@ -18,6 +21,11 @@ const Header = () => {
   ];
 
   const isActive = (path: string) => location.pathname === path;
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success('Signed out successfully');
+  };
 
   return (
     <>
@@ -63,14 +71,24 @@ const Header = () => {
                 </AnimatePresence>
               </div>
 
-              {/* Login */}
-              <button
-                onClick={() => setShowLoginModal(true)}
-                className="flex items-center gap-2 px-4 py-2 text-md font-medium text-primary hover:bg-accent rounded-lg transition-colors"
-              >
-                <LogIn className="w-4 h-4" />
-                <span className="hidden sm:inline">Login</span>
-              </button>
+              {/* Login/Logout */}
+              {user ? (
+                <button
+                  onClick={handleSignOut}
+                  className="flex items-center gap-2 px-4 py-2 text-md font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span className="hidden sm:inline">Logout</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => setShowLoginModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 text-md font-medium text-primary hover:bg-accent rounded-lg transition-colors"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span className="hidden sm:inline">Login</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
