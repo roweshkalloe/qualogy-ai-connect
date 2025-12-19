@@ -21,7 +21,7 @@ const Header = () => {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border py-2">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-18">
             {/* Logo */}
@@ -66,7 +66,7 @@ const Header = () => {
               {/* Login */}
               <button
                 onClick={() => setShowLoginModal(true)}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary hover:bg-accent rounded-lg transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-md font-medium text-primary hover:bg-accent rounded-lg transition-colors"
               >
                 <LogIn className="w-4 h-4" />
                 <span className="hidden sm:inline">Login</span>
