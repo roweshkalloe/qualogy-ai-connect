@@ -39,7 +39,7 @@ const Home = () => {
                 transition={{ duration: 0.3 }}
                 className="text-2xl lg:text-3xl font-bold text-foreground"
               >
-                {greetings[currentGreeting]}, {currentUser.name.split(" ")[0]} 👋
+                {greetings[currentGreeting]}, <span className="text-primary">{currentUser.name.split(" ")[0]}</span> 👋
               </motion.h1>
             </AnimatePresence>
           </div>
