@@ -28,7 +28,7 @@ const Home = () => {
           animate={{ opacity: 1, y: 0 }}
           className="bg-gradient-to-br from-primary/5 via-background to-accent/30 rounded-2xl p-6 lg:p-8 border border-primary/10"
         >
-          <p className="text-muted-foreground text-sm mb-1">Welcome back</p>
+          <p className="text-muted-foreground text-sm mb-1 text-transform">Welcome back</p>
           <div className="h-10 overflow-hidden">
             <AnimatePresence mode="wait">
               <motion.h1
