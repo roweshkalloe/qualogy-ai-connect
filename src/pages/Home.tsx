@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingUp, Sparkles } from 'lucide-react';
-import MainLayout from '@/components/MainLayout';
-import PostCard from '@/components/PostCard';
-import { currentUser, getTrendingPosts, getForYouPosts } from '@/data/mockData';
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { TrendingUp, Sparkles } from "lucide-react";
+import MainLayout from "@/components/MainLayout";
+import PostCard from "@/components/PostCard";
+import { currentUser, getTrendingPosts, getForYouPosts } from "@/data/mockData";
 
-const greetings = ['Hey', 'Hi', 'Hello', 'Welcome back'];
+const greetings = ["Hey", "Hi", "Hello", "Welcome back"];
 
 const Home = () => {
   const [currentGreeting, setCurrentGreeting] = useState(0);
@@ -36,10 +36,10 @@ const Home = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 2 }}
                 className="text-2xl lg:text-3xl font-bold text-foreground"
               >
-                {greetings[currentGreeting]}, {currentUser.name.split(' ')[0]} 👋
+                {greetings[currentGreeting]}, {currentUser.name.split(" ")[0]} 👋
               </motion.h1>
             </AnimatePresence>
           </div>
@@ -74,9 +74,7 @@ const Home = () => {
             <Sparkles className="w-5 h-5 text-primary" />
             <h2 className="text-lg font-semibold text-foreground">For You</h2>
           </div>
-          <p className="text-sm text-muted-foreground mb-4">
-            Personalized content from your joined channels
-          </p>
+          <p className="text-sm text-muted-foreground mb-4">Personalized content from your joined channels</p>
           <div className="grid gap-4 lg:grid-cols-2">
             {forYouPosts.map((post, index) => (
               <motion.div
