@@ -94,17 +94,17 @@ const Header = () => {
 
               {/* User Menu / Login */}
               {user ? (
-                <DropdownMenu>
+                <DropdownMenu modal={false}>
                   <DropdownMenuTrigger asChild>
                     <button className="flex items-center gap-2 px-4 py-2 text-md font-medium text-foreground hover:bg-accent rounded-lg transition-colors">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                         <User className="w-4 h-4 text-primary" />
                       </div>
                       <span className="hidden sm:inline">{firstName}</span>
-                      <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                      <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuContent align="end" className="w-48 z-[100]">
                     <DropdownMenuItem 
                       onClick={() => setShowLogoutDialog(true)}
                       className="text-destructive focus:text-destructive cursor-pointer"
