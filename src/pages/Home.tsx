@@ -15,7 +15,7 @@ const Home = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentGreeting((prev) => (prev + 1) % greetings.length);
-    }, 3000);
+    }, 8000);
     return () => clearInterval(interval);
   }, []);
 
