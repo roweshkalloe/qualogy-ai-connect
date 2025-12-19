@@ -1,90 +1,12 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { X, Chrome, Eye, EyeOff } from 'lucide-react';
+import { X, Chrome } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { FloatingInput } from '@/components/ui/floating-input';
 
 interface LoginModalProps {
   onClose: () => void;
 }
-
-interface FloatingInputProps {
-  id: string;
-  label: string;
-  type?: string;
-  value: string;
-  onChange: (value: string) => void;
-  showPasswordToggle?: boolean;
-}
-
-const FloatingInput = ({ 
-  id, 
-  label, 
-  type = 'text', 
-  value, 
-  onChange,
-  showPasswordToggle 
-}: FloatingInputProps) => {
-  const [isFocused, setIsFocused] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const isActive = isFocused || value.length > 0;
-  
-  const inputType = showPasswordToggle 
-    ? (showPassword ? 'text' : 'password') 
-    : type;
-
-  return (
-    <div className="relative">
-      <input
-        id={id}
-        type={inputType}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-        className={`
-          w-full h-14 px-4 pt-4 pb-2 
-          bg-transparent 
-          border-2 rounded-xl
-          text-foreground text-base
-          outline-none
-          transition-all duration-200
-          ${isFocused 
-            ? 'border-primary ring-2 ring-primary/20' 
-            : 'border-border hover:border-muted-foreground/50'
-          }
-          ${showPasswordToggle ? 'pr-12' : ''}
-        `}
-      />
-      <label
-        htmlFor={id}
-        className={`
-          absolute left-4 
-          transition-all duration-200 
-          pointer-events-none
-          ${isActive 
-            ? '-top-2.5 text-xs bg-card px-1 text-primary font-medium' 
-            : 'top-1/2 -translate-y-1/2 text-muted-foreground text-base'
-          }
-        `}
-      >
-        {label}
-      </label>
-      {showPasswordToggle && (
-        <button
-          type="button"
-          onClick={() => setShowPassword(!showPassword)}
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {showPassword ? (
-            <EyeOff className="w-5 h-5" />
-          ) : (
-            <Eye className="w-5 h-5" />
-          )}
-        </button>
-      )}
-    </div>
-  );
-};
 
 const LoginModal = ({ onClose }: LoginModalProps) => {
   const [email, setEmail] = useState('');
