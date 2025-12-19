@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Bell, LogIn, LogOut, Home, Grid3X3, User, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import qualologyLogo from "@/assets/qualogy-logo.png";
@@ -7,6 +7,8 @@ import NotificationsPopup from "./NotificationsPopup";
 import LoginModal from "./LoginModal";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,11 +31,35 @@ const Header = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const { user, signOut } = useAuth();
 
   // Extract first name from full_name
   const fullName = user?.user_metadata?.full_name || '';
   const firstName = fullName.split(' ')[0] || 'User';
+  const initials = fullName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || 'U';
+
+  // Fetch user profile with avatar
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) {
+        setAvatarUrl(null);
+        return;
+      }
+      
+      const { data } = await supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (data?.avatar_url) {
+        setAvatarUrl(data.avatar_url);
+      }
+    };
+
+    fetchProfile();
+  }, [user]);
 
   const navItems = [
     { path: "/", label: "Home", icon: Home },
@@ -97,9 +123,12 @@ const Header = () => {
                 <DropdownMenu modal={false}>
                   <DropdownMenuTrigger asChild>
                     <button className="flex items-center gap-2 px-4 py-2 text-md font-medium text-foreground hover:bg-accent rounded-lg transition-colors">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                        <User className="w-4 h-4 text-primary" />
-                      </div>
+                      <Avatar className="w-8 h-8 shrink-0">
+                        <AvatarImage src={avatarUrl || undefined} alt={firstName} />
+                        <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
                       <span className="hidden sm:inline">{firstName}</span>
                       <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
                     </button>
