@@ -1,10 +1,10 @@
-import { Link, useLocation } from 'react-router-dom';
-import { useState } from 'react';
-import { Bell, LogIn, Home, Grid3X3, User } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import qualologyLogo from '@/assets/qualogy-logo.png';
-import NotificationsPopup from './NotificationsPopup';
-import LoginModal from './LoginModal';
+import { Link, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { Bell, LogIn, Home, Grid3X3, User } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import qualologyLogo from "@/assets/qualogy-logo.png";
+import NotificationsPopup from "./NotificationsPopup";
+import LoginModal from "./LoginModal";
 
 const Header = () => {
   const location = useLocation();
@@ -12,16 +12,16 @@ const Header = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   const navItems = [
-    { path: '/', label: 'Home', icon: Home },
-    { path: '/channels', label: 'Channels', icon: Grid3X3 },
-    { path: '/profile', label: 'Profile', icon: User },
+    { path: "/", label: "Home", icon: Home },
+    { path: "/channels", label: "Channels", icon: Grid3X3 },
+    { path: "/profile", label: "Profile", icon: User },
   ];
 
   const isActive = (path: string) => location.pathname === path;
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border py-2">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-18">
             {/* Logo */}
@@ -35,8 +35,8 @@ const Header = () => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`nav-link flex items-center gap-2 py-2 text-sm ${
-                    isActive(item.path) ? 'active text-primary' : ''
+                  className={`nav-link flex items-center gap-2 py-2 text-md ${
+                    isActive(item.path) ? "active text-primary" : ""
                   }`}
                 >
                   <item.icon className="w-4 h-4" />
@@ -57,11 +57,9 @@ const Header = () => {
                   <Bell className="w-5 h-5" />
                   <span className="notification-dot" />
                 </button>
-                
+
                 <AnimatePresence>
-                  {showNotifications && (
-                    <NotificationsPopup onClose={() => setShowNotifications(false)} />
-                  )}
+                  {showNotifications && <NotificationsPopup onClose={() => setShowNotifications(false)} />}
                 </AnimatePresence>
               </div>
 
@@ -85,12 +83,10 @@ const Header = () => {
                 key={item.path}
                 to={item.path}
                 className={`flex flex-col items-center gap-1 px-4 py-2 text-xs font-medium transition-colors ${
-                  isActive(item.path)
-                    ? 'text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
+                  isActive(item.path) ? "text-primary" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <item.icon className={`w-5 h-5 ${isActive(item.path) ? 'text-primary' : ''}`} />
+                <item.icon className={`w-5 h-5 ${isActive(item.path) ? "text-primary" : ""}`} />
                 {item.label}
               </Link>
             ))}
@@ -98,9 +94,7 @@ const Header = () => {
         </nav>
       </header>
 
-      <AnimatePresence>
-        {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
-      </AnimatePresence>
+      <AnimatePresence>{showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}</AnimatePresence>
     </>
   );
 };
