@@ -36,7 +36,7 @@ const Home = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 2 }}
+                transition={{ duration: 0.3 }}
                 className="text-2xl lg:text-3xl font-bold text-foreground"
               >
                 {greetings[currentGreeting]}, {currentUser.name.split(" ")[0]} 👋
