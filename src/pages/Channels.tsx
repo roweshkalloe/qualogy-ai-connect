@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Filter } from 'lucide-react';
+import { Filter } from 'lucide-react';
 import MainLayout from '@/components/MainLayout';
 import ChannelCard from '@/components/ChannelCard';
-import { Input } from '@/components/ui/input';
+import { FloatingInput } from '@/components/ui/floating-input';
 import { currentUser, getJoinedChannels, getDiscoverChannels } from '@/data/mockData';
 
 const Channels = () => {
@@ -45,13 +45,11 @@ const Channels = () => {
           transition={{ delay: 0.1 }}
           className="relative"
         >
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Search communities..."
+          <FloatingInput
+            id="channel-search"
+            label="Search communities..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 pr-12 h-12 text-base rounded-xl border-border bg-card"
+            onChange={setSearchQuery}
           />
           <button className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-lg transition-colors">
             <Filter className="w-5 h-5 text-muted-foreground" />
