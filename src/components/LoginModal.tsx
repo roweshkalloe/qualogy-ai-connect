@@ -1,13 +1,90 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { X, Mail, Lock, Chrome } from 'lucide-react';
+import { X, Chrome, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 interface LoginModalProps {
   onClose: () => void;
 }
+
+interface FloatingInputProps {
+  id: string;
+  label: string;
+  type?: string;
+  value: string;
+  onChange: (value: string) => void;
+  showPasswordToggle?: boolean;
+}
+
+const FloatingInput = ({ 
+  id, 
+  label, 
+  type = 'text', 
+  value, 
+  onChange,
+  showPasswordToggle 
+}: FloatingInputProps) => {
+  const [isFocused, setIsFocused] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const isActive = isFocused || value.length > 0;
+  
+  const inputType = showPasswordToggle 
+    ? (showPassword ? 'text' : 'password') 
+    : type;
+
+  return (
+    <div className="relative">
+      <input
+        id={id}
+        type={inputType}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+        className={`
+          w-full h-14 px-4 pt-4 pb-2 
+          bg-transparent 
+          border-2 rounded-xl
+          text-foreground text-base
+          outline-none
+          transition-all duration-200
+          ${isFocused 
+            ? 'border-primary ring-2 ring-primary/20' 
+            : 'border-border hover:border-muted-foreground/50'
+          }
+          ${showPasswordToggle ? 'pr-12' : ''}
+        `}
+      />
+      <label
+        htmlFor={id}
+        className={`
+          absolute left-4 
+          transition-all duration-200 
+          pointer-events-none
+          ${isActive 
+            ? '-top-2.5 text-xs bg-card px-1 text-primary font-medium' 
+            : 'top-1/2 -translate-y-1/2 text-muted-foreground text-base'
+          }
+        `}
+      >
+        {label}
+      </label>
+      {showPasswordToggle && (
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+        >
+          {showPassword ? (
+            <EyeOff className="w-5 h-5" />
+          ) : (
+            <Eye className="w-5 h-5" />
+          )}
+        </button>
+      )}
+    </div>
+  );
+};
 
 const LoginModal = ({ onClose }: LoginModalProps) => {
   const [email, setEmail] = useState('');
@@ -20,88 +97,83 @@ const LoginModal = ({ onClose }: LoginModalProps) => {
   };
 
   return (
-    <>
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-foreground/20 backdrop-blur-sm z-50"
+        className="absolute inset-0 bg-foreground/30 backdrop-blur-md"
         onClick={onClose}
       />
 
       {/* Modal */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        initial={{ opacity: 0, scale: 0.9, y: 30 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        exit={{ opacity: 0, scale: 0.9, y: 30 }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-card rounded-2xl shadow-xl border border-border z-50 overflow-hidden"
+        className="relative w-full max-w-md mx-4 bg-gradient-to-b from-card to-card/95 rounded-3xl shadow-2xl border border-border/50 overflow-hidden"
       >
+        {/* Decorative top gradient */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-primary/80 to-primary" />
+        
         {/* Header */}
-        <div className="relative px-6 pt-6 pb-4">
+        <div className="relative px-8 pt-8 pb-6">
           <button
             onClick={onClose}
-            className="absolute right-4 top-4 p-2 hover:bg-muted rounded-full transition-colors"
+            className="absolute right-4 top-4 p-2.5 hover:bg-muted rounded-xl transition-all duration-200 hover:scale-105"
           >
             <X className="w-5 h-5 text-muted-foreground" />
           </button>
           
           <div className="text-center">
-            <h2 className="text-xl font-semibold text-foreground">Welcome Back</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Sign in to Q-AI Hub
+            <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <div className="w-8 h-8 bg-primary rounded-lg" />
+            </div>
+            <h2 className="text-2xl font-bold text-foreground">Welcome Back</h2>
+            <p className="text-sm text-muted-foreground mt-2">
+              Sign in to continue to Q-AI Hub
             </p>
           </div>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="px-6 pb-6 space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium">
-              Email
-            </Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@qualogy.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+        <form onSubmit={handleSubmit} className="px-8 pb-8 space-y-5">
+          <FloatingInput
+            id="email"
+            label="Email"
+            type="email"
+            value={email}
+            onChange={setEmail}
+          />
+
+          <FloatingInput
+            id="password"
+            label="Password"
+            type="password"
+            value={password}
+            onChange={setPassword}
+            showPasswordToggle
+          />
+
+          <div className="flex justify-end">
+            <button type="button" className="text-sm text-primary hover:underline">
+              Forgot password?
+            </button>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm font-medium">
-              Password
-            </Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-
-          <Button type="submit" className="w-full" size="lg">
+          <Button type="submit" className="w-full h-12 text-base font-semibold rounded-xl shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-shadow" size="lg">
             Sign In
           </Button>
 
           {/* Divider */}
-          <div className="relative py-2">
+          <div className="relative py-3">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-card px-2 text-muted-foreground">or continue with</span>
+              <span className="bg-card px-4 text-muted-foreground">or continue with</span>
             </div>
           </div>
 
@@ -109,20 +181,21 @@ const LoginModal = ({ onClose }: LoginModalProps) => {
           <Button
             type="button"
             variant="outline"
-            className="w-full"
+            className="w-full h-12 text-base rounded-xl border-2 hover:bg-muted/50 transition-all"
             size="lg"
             onClick={onClose}
           >
-            <Chrome className="w-5 h-5 mr-2" />
+            <Chrome className="w-5 h-5 mr-3" />
             Login with Google
           </Button>
 
           <p className="text-center text-xs text-muted-foreground pt-2">
-            By signing in, you agree to Qualogy's Terms of Service
+            By signing in, you agree to Qualogy's{' '}
+            <span className="text-primary hover:underline cursor-pointer">Terms of Service</span>
           </p>
         </form>
       </motion.div>
-    </>
+    </div>
   );
 };
 
