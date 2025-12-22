@@ -7,17 +7,16 @@ import PostCard from "@/components/PostCard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getTrendingPosts, getFeedPosts, Post } from "@/services/postService";
+import { getUserJoinedChannelIds } from "@/services/channelService";
 import { useAuth } from "@/hooks/useAuth";
 
 const greetings = ["Hey", "Hi", "Hello", "Welcome"];
-
-// Mock: In real app, this would come from user's profile/membership data
-const mockJoinedChannelIds: string[] = []; // Empty = no channels joined
 
 const Home = () => {
   const [currentGreeting, setCurrentGreeting] = useState(0);
   const [trendingPosts, setTrendingPosts] = useState<Post[]>([]);
   const [forYouPosts, setForYouPosts] = useState<Post[]>([]);
+  const [joinedChannelIds, setJoinedChannelIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   
@@ -25,18 +24,29 @@ const Home = () => {
   const firstName = fullName.split(' ')[0] || 'there';
 
   useEffect(() => {
-    const fetchPosts = async () => {
+    const fetchData = async () => {
       setLoading(true);
-      const [trending, forYou] = await Promise.all([
-        getTrendingPosts(4),
-        getFeedPosts(mockJoinedChannelIds),
-      ]);
+      
+      // Fetch trending posts always
+      const trending = await getTrendingPosts(4);
       setTrendingPosts(trending);
-      setForYouPosts(forYou);
+      
+      // Fetch user's joined channels if logged in
+      if (user?.id) {
+        const channelIds = await getUserJoinedChannelIds(user.id);
+        setJoinedChannelIds(channelIds);
+        
+        // Fetch personalized feed based on joined channels
+        if (channelIds.length > 0) {
+          const forYou = await getFeedPosts(channelIds);
+          setForYouPosts(forYou);
+        }
+      }
+      
       setLoading(false);
     };
-    fetchPosts();
-  }, []);
+    fetchData();
+  }, [user?.id]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -46,7 +56,7 @@ const Home = () => {
   }, []);
 
   const forYouChannels = [...new Set(forYouPosts.map(p => p.channel_name).filter(Boolean))];
-  const hasJoinedChannels = mockJoinedChannelIds.length > 0;
+  const hasJoinedChannels = joinedChannelIds.length > 0;
 
   return (
     <PageTransition>
