@@ -14,6 +14,10 @@ export interface PostComment {
   user_id: string;
   content: string;
   created_at: string;
+  author?: {
+    full_name: string | null;
+    avatar_url: string | null;
+  };
 }
 
 export interface Post {
@@ -374,13 +378,47 @@ export async function unfavoritePost(postId: string, userId: string): Promise<bo
 }
 
 /**
+ * Get comments for a post
+ */
+export async function getCommentsByPost(postId: string): Promise<PostComment[]> {
+  const { data, error } = await supabase
+    .from('post_comments')
+    .select(`
+      *,
+      profiles!inner(full_name, avatar_url)
+    `)
+    .eq('post_id', postId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching comments:', error);
+    return [];
+  }
+
+  return (data || []).map(comment => ({
+    id: comment.id,
+    post_id: comment.post_id,
+    user_id: comment.user_id,
+    content: comment.content,
+    created_at: comment.created_at,
+    author: {
+      full_name: (comment.profiles as any)?.full_name,
+      avatar_url: (comment.profiles as any)?.avatar_url,
+    },
+  }));
+}
+
+/**
  * Add a comment to a post
  */
 export async function addComment(postId: string, userId: string, content: string): Promise<PostComment | null> {
   const { data, error } = await supabase
     .from('post_comments')
     .insert({ post_id: postId, user_id: userId, content })
-    .select()
+    .select(`
+      *,
+      profiles!inner(full_name, avatar_url)
+    `)
     .single();
 
   if (error) {
@@ -388,7 +426,17 @@ export async function addComment(postId: string, userId: string, content: string
     return null;
   }
 
-  return data;
+  return {
+    id: data.id,
+    post_id: data.post_id,
+    user_id: data.user_id,
+    content: data.content,
+    created_at: data.created_at,
+    author: {
+      full_name: (data.profiles as any)?.full_name,
+      avatar_url: (data.profiles as any)?.avatar_url,
+    },
+  };
 }
 
 /**

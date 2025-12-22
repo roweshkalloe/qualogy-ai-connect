@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Star, MessageSquare, ChevronDown, Send } from 'lucide-react';
+import { Heart, Star, MessageSquare, ChevronDown } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { Post } from '@/services/postService';
 import { formatDistanceToNow } from 'date-fns';
+import CommentSection from '@/components/CommentSection';
 
 interface PostCardProps {
   post: Post;
@@ -17,8 +16,8 @@ const PostCard = ({ post, variant = 'default' }: PostCardProps) => {
   const [isLiked, setIsLiked] = useState(post.is_liked || false);
   const [isFavorited, setIsFavorited] = useState(post.is_favorited || false);
   const [likesCount, setLikesCount] = useState(post.likes_count);
+  const [commentsCount, setCommentsCount] = useState(post.comments_count);
   const [showComments, setShowComments] = useState(false);
-  const [newComment, setNewComment] = useState('');
 
   const handleLike = () => {
     setIsLiked(!isLiked);
@@ -27,6 +26,10 @@ const PostCard = ({ post, variant = 'default' }: PostCardProps) => {
 
   const handleFavorite = () => {
     setIsFavorited(!isFavorited);
+  };
+
+  const handleCommentCountChange = (delta: number) => {
+    setCommentsCount(prev => prev + delta);
   };
 
   const timeAgo = formatDistanceToNow(new Date(post.created_at), { addSuffix: true });
@@ -128,7 +131,7 @@ const PostCard = ({ post, variant = 'default' }: PostCardProps) => {
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-all duration-200"
         >
           <MessageSquare className="w-4 h-4" />
-          <span>{post.comments_count}</span>
+          <span>{commentsCount}</span>
           <motion.div
             animate={{ rotate: showComments ? 180 : 0 }}
             transition={{ duration: 0.2 }}
@@ -148,33 +151,11 @@ const PostCard = ({ post, variant = 'default' }: PostCardProps) => {
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="mt-4 pt-4 border-t border-border/50 space-y-3">
-              {post.comments_count === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  No comments yet. Be the first to share your thoughts!
-                </p>
-              ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  {post.comments_count} comment{post.comments_count !== 1 ? 's' : ''}
-                </p>
-              )}
-
-              {/* Add comment */}
-              <div className="flex items-center gap-2 pt-2 pb-1">
-                <Input
-                  placeholder="Write a comment..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  className="flex-1 text-sm h-9 bg-secondary/30 border-border/50 focus:border-primary/50"
-                />
-                <Button 
-                  size="icon" 
-                  className="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all duration-200 ease-out"
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
+            <CommentSection 
+              postId={post.id} 
+              commentsCount={commentsCount}
+              onCommentCountChange={handleCommentCountChange}
+            />
           </motion.div>
         )}
       </AnimatePresence>
