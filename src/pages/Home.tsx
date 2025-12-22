@@ -1,14 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { TrendingUp, Sparkles, Compass, ArrowRight, Users } from "lucide-react";
+import { TrendingUp, Sparkles, Compass, ArrowRight, Users, Filter, X, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
 import PostCard from "@/components/PostCard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getTrendingPosts, getFeedPosts, Post } from "@/services/postService";
-import { getUserJoinedChannelIds } from "@/services/channelService";
+import { getUserJoinedChannelIds, getUserJoinedChannels } from "@/services/channelService";
+import { ChannelWithDetails } from "@/types/database";
 import { useAuth } from "@/hooks/useAuth";
+import { cn } from "@/lib/utils";
 
 const greetings = ["Hey", "Hi", "Hello", "Welcome"];
 
@@ -16,7 +18,8 @@ const Home = () => {
   const [currentGreeting, setCurrentGreeting] = useState(0);
   const [trendingPosts, setTrendingPosts] = useState<Post[]>([]);
   const [forYouPosts, setForYouPosts] = useState<Post[]>([]);
-  const [joinedChannelIds, setJoinedChannelIds] = useState<string[]>([]);
+  const [joinedChannels, setJoinedChannels] = useState<ChannelWithDetails[]>([]);
+  const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   
@@ -33,11 +36,12 @@ const Home = () => {
       
       // Fetch user's joined channels if logged in
       if (user?.id) {
-        const channelIds = await getUserJoinedChannelIds(user.id);
-        setJoinedChannelIds(channelIds);
+        const channels = await getUserJoinedChannels(user.id);
+        setJoinedChannels(channels);
         
         // Fetch personalized feed based on joined channels
-        if (channelIds.length > 0) {
+        if (channels.length > 0) {
+          const channelIds = channels.map(c => c.id);
           const forYou = await getFeedPosts(channelIds);
           setForYouPosts(forYou);
         }
@@ -55,8 +59,13 @@ const Home = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const forYouChannels = [...new Set(forYouPosts.map(p => p.channel_name).filter(Boolean))];
-  const hasJoinedChannels = joinedChannelIds.length > 0;
+  // Filter posts by selected channel
+  const filteredPosts = useMemo(() => {
+    if (!selectedChannelId) return forYouPosts;
+    return forYouPosts.filter(post => post.channel_id === selectedChannelId);
+  }, [forYouPosts, selectedChannelId]);
+
+  const hasJoinedChannels = joinedChannels.length > 0;
 
   return (
     <PageTransition>
@@ -162,36 +171,85 @@ const Home = () => {
               transition={{ delay: 0.4, duration: 0.5 }}
             >
               <div className="mb-6">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-accent">
-                    <Sparkles className="w-4.5 h-4.5 text-accent-foreground" />
-                  </div>
-                  <h2 className="text-xl lg:text-2xl font-semibold text-foreground">
-                    For You
-                  </h2>
-                </div>
-                <div className="ml-12 flex flex-col gap-1">
-                  <p className="text-sm text-muted-foreground">
-                    Based on your channels
-                  </p>
-                  {hasJoinedChannels && forYouChannels.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-1">
-                      {forYouChannels.slice(0, 4).map((channel) => (
-                        <span 
-                          key={channel}
-                          className="inline-flex px-2 py-0.5 text-xs font-medium rounded-md bg-secondary text-secondary-foreground"
-                        >
-                          {channel}
-                        </span>
-                      ))}
-                      {forYouChannels.length > 4 && (
-                        <span className="text-xs text-muted-foreground self-center">
-                          +{forYouChannels.length - 4} more
-                        </span>
-                      )}
+                <div className="flex items-center justify-between gap-4 mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-accent">
+                      <Sparkles className="w-4.5 h-4.5 text-accent-foreground" />
                     </div>
-                  )}
+                    <div>
+                      <h2 className="text-xl lg:text-2xl font-semibold text-foreground">
+                        For You
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        Based on your channels
+                      </p>
+                    </div>
+                  </div>
                 </div>
+
+                {/* Channel Filter Pills */}
+                {hasJoinedChannels && (
+                  <div className="flex flex-wrap items-center gap-2 ml-12">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mr-1">
+                      <Filter className="w-3.5 h-3.5" />
+                      <span>Filter:</span>
+                    </div>
+                    
+                    {/* All Channels Button */}
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setSelectedChannelId(null)}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border transition-all duration-200",
+                        !selectedChannelId
+                          ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                          : "bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
+                      )}
+                    >
+                      {!selectedChannelId && <Check className="w-3 h-3" />}
+                      All
+                    </motion.button>
+
+                    {/* Channel Pills */}
+                    {joinedChannels.map((channel) => (
+                      <motion.button
+                        key={channel.id}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setSelectedChannelId(
+                          selectedChannelId === channel.id ? null : channel.id
+                        )}
+                        className={cn(
+                          "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border transition-all duration-200",
+                          selectedChannelId === channel.id
+                            ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                            : "bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
+                        )}
+                      >
+                        {selectedChannelId === channel.id && <Check className="w-3 h-3" />}
+                        {channel.name}
+                      </motion.button>
+                    ))}
+
+                    {/* Clear filter button */}
+                    <AnimatePresence>
+                      {selectedChannelId && (
+                        <motion.button
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => setSelectedChannelId(null)}
+                          className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </motion.button>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )}
               </div>
 
               {/* Show empty state if no channels joined */}
@@ -214,18 +272,33 @@ const Home = () => {
                   </Link>
                 </div>
               ) : (
-                <div className="grid gap-4 lg:grid-cols-2">
-                  {forYouPosts.map((post, index) => (
-                    <motion.div
-                      key={post.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.5 + index * 0.06, duration: 0.4 }}
-                    >
-                      <PostCard post={post} />
-                    </motion.div>
-                  ))}
-                </div>
+                <AnimatePresence mode="wait">
+                  <motion.div 
+                    key={selectedChannelId || 'all'}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="grid gap-4 lg:grid-cols-2"
+                  >
+                    {filteredPosts.length > 0 ? (
+                      filteredPosts.map((post, index) => (
+                        <motion.div
+                          key={post.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.04, duration: 0.3 }}
+                        >
+                          <PostCard post={post} />
+                        </motion.div>
+                      ))
+                    ) : (
+                      <div className="col-span-2 text-center py-12">
+                        <p className="text-muted-foreground">No posts in this channel yet.</p>
+                      </div>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
               )}
             </motion.section>
 
