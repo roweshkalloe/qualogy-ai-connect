@@ -54,9 +54,11 @@ export {
 export {
   getAllPosts,
   getPostsByChannel,
+  getPostsByChannelSlug,
   getPostsByUser,
   getPostById,
   getFeedPosts,
+  getTrendingPosts,
   createPost,
   updatePost,
   deletePost,

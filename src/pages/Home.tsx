@@ -5,7 +5,8 @@ import { Link } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
 import PostCard from "@/components/PostCard";
 import { Button } from "@/components/ui/button";
-import { getTrendingPosts, getForYouPosts } from "@/data/mockPosts";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getTrendingPosts, getFeedPosts, Post } from "@/services/postService";
 import { useAuth } from "@/hooks/useAuth";
 
 const greetings = ["Hey", "Hi", "Hello", "Welcome"];
@@ -15,13 +16,27 @@ const mockJoinedChannelIds: string[] = []; // Empty = no channels joined
 
 const Home = () => {
   const [currentGreeting, setCurrentGreeting] = useState(0);
+  const [trendingPosts, setTrendingPosts] = useState<Post[]>([]);
+  const [forYouPosts, setForYouPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  
-  const trendingPosts = getTrendingPosts(4);
-  const forYouPosts = getForYouPosts(mockJoinedChannelIds, 6);
   
   const fullName = user?.user_metadata?.full_name || '';
   const firstName = fullName.split(' ')[0] || 'there';
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      const [trending, forYou] = await Promise.all([
+        getTrendingPosts(4),
+        getFeedPosts(mockJoinedChannelIds),
+      ]);
+      setTrendingPosts(trending);
+      setForYouPosts(forYou);
+      setLoading(false);
+    };
+    fetchPosts();
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -30,7 +45,7 @@ const Home = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const forYouChannels = [...new Set(forYouPosts.map(p => p.channelName))];
+  const forYouChannels = [...new Set(forYouPosts.map(p => p.channel_name).filter(Boolean))];
   const hasJoinedChannels = mockJoinedChannelIds.length > 0;
 
   return (
@@ -94,25 +109,33 @@ const Home = () => {
                 </p>
               </div>
 
-              <div className="space-y-4">
-                {trendingPosts.map((post, index) => (
-                  <motion.div
-                    key={post.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 + index * 0.08, duration: 0.4 }}
-                    className="relative"
-                  >
-                    <div className="absolute right-3 sm:right-4 top-3 sm:top-4 z-10">
-                      <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-primary/10 border border-primary/20 backdrop-blur-sm">
-                        <TrendingUp className="w-3 h-3 text-primary" />
-                        <span className="text-xs font-medium text-primary">#{index + 1}</span>
+              {loading ? (
+                <div className="space-y-4">
+                  {[...Array(4)].map((_, i) => (
+                    <Skeleton key={i} className="h-48 w-full rounded-xl" />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {trendingPosts.map((post, index) => (
+                    <motion.div
+                      key={post.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 + index * 0.08, duration: 0.4 }}
+                      className="relative"
+                    >
+                      <div className="absolute right-3 sm:right-4 top-3 sm:top-4 z-10">
+                        <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-primary/10 border border-primary/20 backdrop-blur-sm">
+                          <TrendingUp className="w-3 h-3 text-primary" />
+                          <span className="text-xs font-medium text-primary">#{index + 1}</span>
+                        </div>
                       </div>
-                    </div>
-                    <PostCard post={post} variant="trending" />
-                  </motion.div>
-                ))}
-              </div>
+                      <PostCard post={post} variant="trending" />
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </motion.section>
 
             {/* Visual separator */}

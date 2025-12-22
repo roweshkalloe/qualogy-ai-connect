@@ -7,9 +7,10 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import PageTransition from '@/components/PageTransition';
 import { getChannelBySlug } from '@/services/channelService';
-import { getPostsByChannelSlug } from '@/data/mockPosts';
+import { getPostsByChannelSlug } from '@/services/postService';
 import { getChannelGuidedPractices, getChannelTools, getChannelPrompts, getChannelShowcases } from '@/data/mockChannelContent';
 import { ChannelWithDetails } from '@/types/database';
+import { Post } from '@/services/postService';
 import ChannelFeedTab from '@/components/channel/ChannelFeedTab';
 import ChannelGuidedTab from '@/components/channel/ChannelGuidedTab';
 import ChannelToolsTab from '@/components/channel/ChannelToolsTab';
@@ -33,18 +34,25 @@ const ChannelDetail = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('feed');
   const [channel, setChannel] = useState<ChannelWithDetails | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [joined, setJoined] = useState(false);
 
   useEffect(() => {
-    const fetchChannel = async () => {
+    const fetchData = async () => {
       if (!slug) return;
       setLoading(true);
-      const data = await getChannelBySlug(slug);
-      setChannel(data);
+      
+      const [channelData, postsData] = await Promise.all([
+        getChannelBySlug(slug),
+        getPostsByChannelSlug(slug),
+      ]);
+      
+      setChannel(channelData);
+      setPosts(postsData);
       setLoading(false);
     };
-    fetchChannel();
+    fetchData();
   }, [slug]);
 
   if (loading) {
@@ -81,7 +89,6 @@ const ChannelDetail = () => {
   }
 
   const IconComponent = iconMap[channel.icon] || Blocks;
-  const posts = getPostsByChannelSlug(slug || '');
   const guidedPractices = getChannelGuidedPractices(channel.id);
   const tools = getChannelTools(channel.id);
   const prompts = getChannelPrompts(channel.id);

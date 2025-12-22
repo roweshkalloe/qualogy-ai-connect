@@ -1,312 +1,307 @@
 /**
  * Post Service - Data abstraction layer for post operations
  * 
- * Currently returns mock data. To switch to database:
- * 1. Import supabase client
- * 2. Replace mock data returns with database queries
- * 3. UI components remain unchanged
+ * Fetches posts from the Supabase database.
  */
 
-import { mockUsers } from '@/data/mockUsers';
-
-// Flag to easily switch between mock and database
-const USE_DATABASE = false;
+import { supabase } from '@/integrations/supabase/client';
 
 // ============= Types =============
 
 export interface PostComment {
   id: string;
   post_id: string;
-  author_id: string;
-  author_name: string;
-  author_avatar: string;
+  user_id: string;
   content: string;
   created_at: string;
 }
 
 export interface Post {
   id: string;
-  author_id: string;
-  author_name: string;
-  author_avatar: string;
-  author_profession: string;
   channel_id: string;
-  channel_name: string;
+  channel_name?: string;
+  channel_slug?: string;
+  user_id: string;
   title: string;
   content: string;
+  image_url: string | null;
+  likes_count: number;
+  comments_count: number;
+  tags: string[];
   created_at: string;
-  likes: number;
-  comments: PostComment[];
-  is_liked: boolean;
-  is_favorited: boolean;
+  updated_at: string;
+  // User interaction states (computed based on current user)
+  is_liked?: boolean;
+  is_favorited?: boolean;
 }
 
 export interface CreatePostInput {
   channel_id: string;
   title: string;
   content: string;
+  image_url?: string;
+  tags?: string[];
 }
 
 export interface UpdatePostInput {
   title?: string;
   content?: string;
+  image_url?: string;
+  tags?: string[];
 }
-
-// ============= Mock Data =============
-
-// Mock posts aligned with database schema
-const mockPosts: Post[] = [
-  {
-    id: 'post-1',
-    author_id: 'user-2',
-    author_name: 'Sarah Connor',
-    author_avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face',
-    author_profession: 'UX Designer',
-    channel_id: 'channel-2',
-    channel_name: 'UI/UX Design',
-    title: 'Designing AI-First Interfaces: 5 Principles',
-    content: 'Just published my thoughts on how AI is changing the way we approach UI design. The key is to make AI feel like a helpful assistant, not a replacement for human decision-making.',
-    created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    likes: 47,
-    comments: [
-      {
-        id: 'comment-1',
-        post_id: 'post-1',
-        author_id: 'user-3',
-        author_name: 'Harvey Specter',
-        author_avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-        content: 'Great insights! Especially point #3 about progressive disclosure.',
-        created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-      },
-    ],
-    is_liked: true,
-    is_favorited: false,
-  },
-  {
-    id: 'post-2',
-    author_id: 'user-3',
-    author_name: 'Harvey Specter',
-    author_avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-    author_profession: 'Solutions Architect',
-    channel_id: 'channel-1',
-    channel_name: 'Mendix Masters',
-    title: 'Mendix Widgets: A Complete Guide',
-    content: 'Been working on a comprehensive guide for building custom Mendix widgets. Covering everything from setup to deployment. Will share the link soon!',
-    created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-    likes: 62,
-    comments: [],
-    is_liked: false,
-    is_favorited: true,
-  },
-  {
-    id: 'post-3',
-    author_id: 'user-4',
-    author_name: 'Emma Watson',
-    author_avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-    author_profession: 'Data Scientist',
-    channel_id: 'channel-4',
-    channel_name: 'Data & AI',
-    title: 'Fine-tuning LLMs for Enterprise Use Cases',
-    content: 'Our team just completed a POC on fine-tuning GPT models for our specific domain. The results were impressive - 40% improvement in accuracy for our use case.',
-    created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
-    likes: 89,
-    comments: [
-      {
-        id: 'comment-2',
-        post_id: 'post-3',
-        author_id: 'user-5',
-        author_name: 'Mike Ross',
-        author_avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
-        content: 'Would love to hear more about the training data preparation!',
-        created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-      },
-      {
-        id: 'comment-3',
-        post_id: 'post-3',
-        author_id: 'user-1',
-        author_name: 'Alex Johnson',
-        author_avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-        content: 'This is exactly what we need for our project. Can we schedule a call?',
-        created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-      },
-    ],
-    is_liked: false,
-    is_favorited: false,
-  },
-  {
-    id: 'post-4',
-    author_id: 'user-5',
-    author_name: 'Mike Ross',
-    author_avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
-    author_profession: 'Cloud Engineer',
-    channel_id: 'channel-5',
-    channel_name: 'Cloud Native',
-    title: 'Zero-Downtime Kubernetes Migrations',
-    content: 'Successfully migrated 50+ microservices to a new Kubernetes cluster without any downtime. Here are the key strategies we used...',
-    created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    likes: 156,
-    comments: [],
-    is_liked: true,
-    is_favorited: true,
-  },
-  {
-    id: 'post-5',
-    author_id: 'user-6',
-    author_name: 'Rachel Zane',
-    author_avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face',
-    author_profession: 'Mendix Consultant',
-    channel_id: 'channel-1',
-    channel_name: 'Mendix Masters',
-    title: 'Automated Client Onboarding with Mendix',
-    content: 'Just wrapped up a project where we automated the entire client onboarding process using Mendix workflows. Reduced onboarding time from 2 weeks to 3 days!',
-    created_at: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-    likes: 78,
-    comments: [],
-    is_liked: false,
-    is_favorited: false,
-  },
-];
 
 // ============= Service Functions =============
 
 /**
- * Get all posts
+ * Get all posts with channel info
  */
 export async function getAllPosts(): Promise<Post[]> {
-  if (USE_DATABASE) {
-    // TODO: Implement database fetch
-    // const { data, error } = await supabase
-    //   .from('posts')
-    //   .select('*, comments(*)')
-    //   .order('created_at', { ascending: false });
-    // return data ?? [];
+  const { data, error } = await supabase
+    .from('posts')
+    .select(`
+      *,
+      channels!inner(name, slug)
+    `)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching posts:', error);
+    return [];
   }
-  
-  return mockPosts;
+
+  return (data || []).map(post => ({
+    ...post,
+    channel_name: (post.channels as any)?.name,
+    channel_slug: (post.channels as any)?.slug,
+  }));
 }
 
 /**
- * Get posts for a specific channel
+ * Get posts for a specific channel by ID
  */
 export async function getPostsByChannel(channelId: string): Promise<Post[]> {
-  if (USE_DATABASE) {
-    // TODO: Implement database fetch
-    // const { data, error } = await supabase
-    //   .from('posts')
-    //   .select('*, comments(*)')
-    //   .eq('channel_id', channelId)
-    //   .order('created_at', { ascending: false });
-    // return data ?? [];
+  const { data, error } = await supabase
+    .from('posts')
+    .select(`
+      *,
+      channels!inner(name, slug)
+    `)
+    .eq('channel_id', channelId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching channel posts:', error);
+    return [];
   }
-  
-  return mockPosts.filter(p => p.channel_id === channelId);
+
+  return (data || []).map(post => ({
+    ...post,
+    channel_name: (post.channels as any)?.name,
+    channel_slug: (post.channels as any)?.slug,
+  }));
+}
+
+/**
+ * Get posts for a specific channel by slug
+ */
+export async function getPostsByChannelSlug(slug: string): Promise<Post[]> {
+  const { data, error } = await supabase
+    .from('posts')
+    .select(`
+      *,
+      channels!inner(name, slug)
+    `)
+    .eq('channels.slug', slug)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching channel posts by slug:', error);
+    return [];
+  }
+
+  return (data || []).map(post => ({
+    ...post,
+    channel_name: (post.channels as any)?.name,
+    channel_slug: (post.channels as any)?.slug,
+  }));
 }
 
 /**
  * Get posts by a specific user
  */
 export async function getPostsByUser(userId: string): Promise<Post[]> {
-  if (USE_DATABASE) {
-    // TODO: Implement database fetch
+  const { data, error } = await supabase
+    .from('posts')
+    .select(`
+      *,
+      channels!inner(name, slug)
+    `)
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching user posts:', error);
+    return [];
   }
-  
-  return mockPosts.filter(p => p.author_id === userId);
+
+  return (data || []).map(post => ({
+    ...post,
+    channel_name: (post.channels as any)?.name,
+    channel_slug: (post.channels as any)?.slug,
+  }));
 }
 
 /**
  * Get a single post by ID
  */
 export async function getPostById(postId: string): Promise<Post | null> {
-  if (USE_DATABASE) {
-    // TODO: Implement database fetch
+  const { data, error } = await supabase
+    .from('posts')
+    .select(`
+      *,
+      channels!inner(name, slug)
+    `)
+    .eq('id', postId)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error fetching post:', error);
+    return null;
   }
-  
-  return mockPosts.find(p => p.id === postId) ?? null;
+
+  if (!data) return null;
+
+  return {
+    ...data,
+    channel_name: (data.channels as any)?.name,
+    channel_slug: (data.channels as any)?.slug,
+  };
 }
 
 /**
  * Get posts from channels the user has joined (feed)
  */
 export async function getFeedPosts(joinedChannelIds: string[]): Promise<Post[]> {
-  if (USE_DATABASE) {
-    // TODO: Implement database fetch with channel filter
+  if (joinedChannelIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from('posts')
+    .select(`
+      *,
+      channels!inner(name, slug)
+    `)
+    .in('channel_id', joinedChannelIds)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching feed posts:', error);
+    return [];
   }
-  
-  return mockPosts
-    .filter(p => joinedChannelIds.includes(p.channel_id))
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+  return (data || []).map(post => ({
+    ...post,
+    channel_name: (post.channels as any)?.name,
+    channel_slug: (post.channels as any)?.slug,
+  }));
+}
+
+/**
+ * Get trending posts (most liked posts from the past week)
+ */
+export async function getTrendingPosts(limit: number = 4): Promise<Post[]> {
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+  const { data, error } = await supabase
+    .from('posts')
+    .select(`
+      *,
+      channels!inner(name, slug)
+    `)
+    .gte('created_at', oneWeekAgo.toISOString())
+    .order('likes_count', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching trending posts:', error);
+    return [];
+  }
+
+  return (data || []).map(post => ({
+    ...post,
+    channel_name: (post.channels as any)?.name,
+    channel_slug: (post.channels as any)?.slug,
+  }));
 }
 
 /**
  * Create a new post
  */
 export async function createPost(input: CreatePostInput, userId: string): Promise<Post | null> {
-  if (USE_DATABASE) {
-    // TODO: Implement database insert
-    // const { data, error } = await supabase
-    //   .from('posts')
-    //   .insert({ ...input, author_id: userId })
-    //   .select()
-    //   .single();
-    // return data;
+  const { data, error } = await supabase
+    .from('posts')
+    .insert({
+      ...input,
+      user_id: userId,
+    })
+    .select(`
+      *,
+      channels!inner(name, slug)
+    `)
+    .single();
+
+  if (error) {
+    console.error('Error creating post:', error);
+    return null;
   }
-  
-  // Mock create
-  const user = mockUsers.find(u => u.user_id === userId);
-  if (!user) return null;
-  
-  const newPost: Post = {
-    id: `post-${Date.now()}`,
-    author_id: userId,
-    author_name: user.full_name || 'Unknown User',
-    author_avatar: user.avatar_url || '',
-    author_profession: user.profession || '',
-    channel_id: input.channel_id,
-    channel_name: '', // Would be fetched from channel in real implementation
-    title: input.title,
-    content: input.content,
-    created_at: new Date().toISOString(),
-    likes: 0,
-    comments: [],
-    is_liked: false,
-    is_favorited: false,
+
+  return {
+    ...data,
+    channel_name: (data.channels as any)?.name,
+    channel_slug: (data.channels as any)?.slug,
   };
-  
-  mockPosts.unshift(newPost);
-  return newPost;
 }
 
 /**
  * Update a post
  */
 export async function updatePost(postId: string, updates: UpdatePostInput): Promise<Post | null> {
-  if (USE_DATABASE) {
-    // TODO: Implement database update
+  const { data, error } = await supabase
+    .from('posts')
+    .update(updates)
+    .eq('id', postId)
+    .select(`
+      *,
+      channels!inner(name, slug)
+    `)
+    .single();
+
+  if (error) {
+    console.error('Error updating post:', error);
+    return null;
   }
-  
-  const postIndex = mockPosts.findIndex(p => p.id === postId);
-  if (postIndex === -1) return null;
-  
-  mockPosts[postIndex] = {
-    ...mockPosts[postIndex],
-    ...updates,
+
+  return {
+    ...data,
+    channel_name: (data.channels as any)?.name,
+    channel_slug: (data.channels as any)?.slug,
   };
-  
-  return mockPosts[postIndex];
 }
 
 /**
  * Delete a post
  */
 export async function deletePost(postId: string): Promise<boolean> {
-  if (USE_DATABASE) {
-    // TODO: Implement database delete
+  const { error } = await supabase
+    .from('posts')
+    .delete()
+    .eq('id', postId);
+
+  if (error) {
+    console.error('Error deleting post:', error);
+    return false;
   }
-  
-  const postIndex = mockPosts.findIndex(p => p.id === postId);
-  if (postIndex === -1) return false;
-  
-  mockPosts.splice(postIndex, 1);
+
   return true;
 }
 
@@ -314,15 +309,15 @@ export async function deletePost(postId: string): Promise<boolean> {
  * Like a post
  */
 export async function likePost(postId: string, userId: string): Promise<boolean> {
-  if (USE_DATABASE) {
-    // TODO: Implement database insert for post_likes
+  const { error } = await supabase
+    .from('post_likes')
+    .insert({ post_id: postId, user_id: userId });
+
+  if (error) {
+    console.error('Error liking post:', error);
+    return false;
   }
-  
-  const postIndex = mockPosts.findIndex(p => p.id === postId);
-  if (postIndex === -1) return false;
-  
-  mockPosts[postIndex].likes += 1;
-  mockPosts[postIndex].is_liked = true;
+
   return true;
 }
 
@@ -330,17 +325,17 @@ export async function likePost(postId: string, userId: string): Promise<boolean>
  * Unlike a post
  */
 export async function unlikePost(postId: string, userId: string): Promise<boolean> {
-  if (USE_DATABASE) {
-    // TODO: Implement database delete for post_likes
+  const { error } = await supabase
+    .from('post_likes')
+    .delete()
+    .eq('post_id', postId)
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error('Error unliking post:', error);
+    return false;
   }
-  
-  const postIndex = mockPosts.findIndex(p => p.id === postId);
-  if (postIndex === -1) return false;
-  
-  if (mockPosts[postIndex].likes > 0) {
-    mockPosts[postIndex].likes -= 1;
-  }
-  mockPosts[postIndex].is_liked = false;
+
   return true;
 }
 
@@ -348,14 +343,15 @@ export async function unlikePost(postId: string, userId: string): Promise<boolea
  * Favorite a post
  */
 export async function favoritePost(postId: string, userId: string): Promise<boolean> {
-  if (USE_DATABASE) {
-    // TODO: Implement database insert for post_favorites
+  const { error } = await supabase
+    .from('post_favorites')
+    .insert({ post_id: postId, user_id: userId });
+
+  if (error) {
+    console.error('Error favoriting post:', error);
+    return false;
   }
-  
-  const postIndex = mockPosts.findIndex(p => p.id === postId);
-  if (postIndex === -1) return false;
-  
-  mockPosts[postIndex].is_favorited = true;
+
   return true;
 }
 
@@ -363,14 +359,17 @@ export async function favoritePost(postId: string, userId: string): Promise<bool
  * Unfavorite a post
  */
 export async function unfavoritePost(postId: string, userId: string): Promise<boolean> {
-  if (USE_DATABASE) {
-    // TODO: Implement database delete for post_favorites
+  const { error } = await supabase
+    .from('post_favorites')
+    .delete()
+    .eq('post_id', postId)
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error('Error unfavoriting post:', error);
+    return false;
   }
-  
-  const postIndex = mockPosts.findIndex(p => p.id === postId);
-  if (postIndex === -1) return false;
-  
-  mockPosts[postIndex].is_favorited = false;
+
   return true;
 }
 
@@ -378,45 +377,34 @@ export async function unfavoritePost(postId: string, userId: string): Promise<bo
  * Add a comment to a post
  */
 export async function addComment(postId: string, userId: string, content: string): Promise<PostComment | null> {
-  if (USE_DATABASE) {
-    // TODO: Implement database insert for comments
+  const { data, error } = await supabase
+    .from('post_comments')
+    .insert({ post_id: postId, user_id: userId, content })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error adding comment:', error);
+    return null;
   }
-  
-  const postIndex = mockPosts.findIndex(p => p.id === postId);
-  if (postIndex === -1) return null;
-  
-  const user = mockUsers.find(u => u.user_id === userId);
-  if (!user) return null;
-  
-  const newComment: PostComment = {
-    id: `comment-${Date.now()}`,
-    post_id: postId,
-    author_id: userId,
-    author_name: user.full_name || 'Unknown User',
-    author_avatar: user.avatar_url || '',
-    content,
-    created_at: new Date().toISOString(),
-  };
-  
-  mockPosts[postIndex].comments.push(newComment);
-  return newComment;
+
+  return data;
 }
 
 /**
  * Delete a comment
  */
-export async function deleteComment(postId: string, commentId: string): Promise<boolean> {
-  if (USE_DATABASE) {
-    // TODO: Implement database delete for comments
+export async function deleteComment(commentId: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('post_comments')
+    .delete()
+    .eq('id', commentId);
+
+  if (error) {
+    console.error('Error deleting comment:', error);
+    return false;
   }
-  
-  const postIndex = mockPosts.findIndex(p => p.id === postId);
-  if (postIndex === -1) return false;
-  
-  const commentIndex = mockPosts[postIndex].comments.findIndex(c => c.id === commentId);
-  if (commentIndex === -1) return false;
-  
-  mockPosts[postIndex].comments.splice(commentIndex, 1);
+
   return true;
 }
 
@@ -424,27 +412,42 @@ export async function deleteComment(postId: string, commentId: string): Promise<
  * Get user's favorited posts
  */
 export async function getFavoritedPosts(userId: string): Promise<Post[]> {
-  if (USE_DATABASE) {
-    // TODO: Implement database fetch with favorites join
+  const { data, error } = await supabase
+    .from('post_favorites')
+    .select(`
+      posts!inner(
+        *,
+        channels!inner(name, slug)
+      )
+    `)
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error('Error fetching favorited posts:', error);
+    return [];
   }
-  
-  // In mock, we just filter by is_favorited flag
-  // In real app, this would be based on a user-specific favorites table
-  return mockPosts.filter(p => p.is_favorited);
+
+  return (data || []).map((item: any) => ({
+    ...item.posts,
+    channel_name: item.posts.channels?.name,
+    channel_slug: item.posts.channels?.slug,
+    is_favorited: true,
+  }));
 }
 
 // ============= Sync Versions for Legacy Compatibility =============
 
 export function getAllPostsSync(): Post[] {
-  return mockPosts;
+  console.warn('getAllPostsSync is deprecated. Use getAllPosts() async function instead.');
+  return [];
 }
 
 export function getPostsByChannelSync(channelId: string): Post[] {
-  return mockPosts.filter(p => p.channel_id === channelId);
+  console.warn('getPostsByChannelSync is deprecated. Use getPostsByChannel() async function instead.');
+  return [];
 }
 
 export function getFeedPostsSync(joinedChannelIds: string[]): Post[] {
-  return mockPosts
-    .filter(p => joinedChannelIds.includes(p.channel_id))
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  console.warn('getFeedPostsSync is deprecated. Use getFeedPosts() async function instead.');
+  return [];
 }
