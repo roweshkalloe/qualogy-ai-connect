@@ -14,10 +14,12 @@ export interface PostComment {
   user_id: string;
   content: string;
   created_at: string;
+  parent_id: string | null;
   author?: {
     full_name: string | null;
     avatar_url: string | null;
   };
+  replies?: PostComment[];
 }
 
 export interface Post {
@@ -378,7 +380,7 @@ export async function unfavoritePost(postId: string, userId: string): Promise<bo
 }
 
 /**
- * Get comments for a post
+ * Get comments for a post (with nested replies)
  */
 export async function getCommentsByPost(postId: string): Promise<PostComment[]> {
   const { data, error } = await supabase
@@ -405,26 +407,55 @@ export async function getCommentsByPost(postId: string): Promise<PostComment[]> 
     (profiles || []).map(p => [p.user_id, p])
   );
 
-  return data.map(comment => ({
+  // Map all comments with author info
+  const allComments: PostComment[] = data.map(comment => ({
     id: comment.id,
     post_id: comment.post_id,
     user_id: comment.user_id,
     content: comment.content,
     created_at: comment.created_at,
+    parent_id: comment.parent_id,
     author: profileMap.get(comment.user_id) ? {
       full_name: profileMap.get(comment.user_id)?.full_name ?? null,
       avatar_url: profileMap.get(comment.user_id)?.avatar_url ?? null,
     } : undefined,
+    replies: [],
   }));
+
+  // Build nested structure
+  const commentMap = new Map(allComments.map(c => [c.id, c]));
+  const rootComments: PostComment[] = [];
+
+  allComments.forEach(comment => {
+    if (comment.parent_id && commentMap.has(comment.parent_id)) {
+      const parent = commentMap.get(comment.parent_id)!;
+      if (!parent.replies) parent.replies = [];
+      parent.replies.push(comment);
+    } else {
+      rootComments.push(comment);
+    }
+  });
+
+  return rootComments;
 }
 
 /**
- * Add a comment to a post
+ * Add a comment to a post (optionally as a reply)
  */
-export async function addComment(postId: string, userId: string, content: string): Promise<PostComment | null> {
+export async function addComment(
+  postId: string, 
+  userId: string, 
+  content: string, 
+  parentId?: string
+): Promise<PostComment | null> {
   const { data, error } = await supabase
     .from('post_comments')
-    .insert({ post_id: postId, user_id: userId, content })
+    .insert({ 
+      post_id: postId, 
+      user_id: userId, 
+      content,
+      parent_id: parentId || null 
+    })
     .select()
     .single();
 
@@ -446,10 +477,12 @@ export async function addComment(postId: string, userId: string, content: string
     user_id: data.user_id,
     content: data.content,
     created_at: data.created_at,
+    parent_id: data.parent_id,
     author: profile ? {
       full_name: profile.full_name,
       avatar_url: profile.avatar_url,
     } : undefined,
+    replies: [],
   };
 }
 
