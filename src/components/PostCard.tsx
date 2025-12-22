@@ -39,7 +39,7 @@ const PostCard = ({ post, variant = 'default' }: PostCardProps) => {
       whileHover={{ y: -2 }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
       className={cn(
-        "bg-card rounded-xl border p-5 transition-shadow duration-300",
+        "bg-card rounded-xl border p-5 transition-shadow duration-300 h-full flex flex-col",
         variant === 'trending' 
           ? "border-primary/20 shadow-[0_0_0_1px_hsl(var(--primary)/0.05)] hover:shadow-[0_8px_30px_-12px_hsl(var(--primary)/0.15)]" 
           : "border-border hover:shadow-[0_8px_30px_-12px_hsl(var(--foreground)/0.1)]"
@@ -68,9 +68,9 @@ const PostCard = ({ post, variant = 'default' }: PostCardProps) => {
       </div>
 
       {/* Content */}
-      <div className="mb-4">
+      <div className="mb-4 flex-1">
         <h3 className="font-semibold text-foreground mb-2 leading-snug">{post.title}</h3>
-        <p className="text-muted-foreground text-sm leading-relaxed">{post.content}</p>
+        <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">{post.content}</p>
       </div>
 
       {/* Tags */}
