@@ -1,125 +1,159 @@
 /**
  * Channel Service - Data abstraction layer for channel operations
  * 
- * Currently returns mock data. To switch to database:
- * 1. Import supabase client
- * 2. Replace mock data returns with database queries
- * 3. UI components remain unchanged
+ * Fetches channel data from Supabase database.
  */
 
+import { supabase } from '@/integrations/supabase/client';
 import { ChannelWithDetails, DbChannelAdmin } from '@/types/database';
-import { mockChannels, mockChannelAdmins } from '@/data/mockChannels';
-import { getCurrentUserSync } from './userService';
-
-// Flag to easily switch between mock and database
-const USE_DATABASE = false;
 
 /**
- * Get all channels
+ * Get all channels from database
  */
 export async function getAllChannels(): Promise<ChannelWithDetails[]> {
-  if (USE_DATABASE) {
-    // TODO: Implement database fetch
-    // const { data, error } = await supabase
-    //   .from('channels')
-    //   .select('*')
-    //   .order('name');
-    // return data ?? [];
+  const { data, error } = await supabase
+    .from('channels')
+    .select('*')
+    .order('name');
+  
+  if (error) {
+    console.error('Error fetching channels:', error);
+    return [];
   }
   
-  return mockChannels;
+  return data ?? [];
 }
 
 /**
  * Get a channel by its slug
  */
 export async function getChannelBySlug(slug: string): Promise<ChannelWithDetails | null> {
-  if (USE_DATABASE) {
-    // TODO: Implement database fetch
-    // const { data, error } = await supabase
-    //   .from('channels')
-    //   .select('*')
-    //   .eq('slug', slug)
-    //   .maybeSingle();
-    // return data;
+  const { data, error } = await supabase
+    .from('channels')
+    .select('*')
+    .eq('slug', slug)
+    .maybeSingle();
+  
+  if (error) {
+    console.error('Error fetching channel by slug:', error);
+    return null;
   }
   
-  return mockChannels.find(c => c.slug === slug) ?? null;
+  return data;
 }
 
 /**
  * Get a channel by its ID
  */
 export async function getChannelById(channelId: string): Promise<ChannelWithDetails | null> {
-  if (USE_DATABASE) {
-    // TODO: Implement database fetch
+  const { data, error } = await supabase
+    .from('channels')
+    .select('*')
+    .eq('id', channelId)
+    .maybeSingle();
+  
+  if (error) {
+    console.error('Error fetching channel by id:', error);
+    return null;
   }
   
-  return mockChannels.find(c => c.id === channelId) ?? null;
+  return data;
 }
 
 /**
  * Get channels that the current user has joined
  */
 export async function getJoinedChannels(channelIds: string[]): Promise<ChannelWithDetails[]> {
-  if (USE_DATABASE) {
-    // TODO: Implement database fetch with user membership
+  if (channelIds.length === 0) return [];
+  
+  const { data, error } = await supabase
+    .from('channels')
+    .select('*')
+    .in('id', channelIds)
+    .order('name');
+  
+  if (error) {
+    console.error('Error fetching joined channels:', error);
+    return [];
   }
   
-  return mockChannels.filter(c => channelIds.includes(c.id));
+  return data ?? [];
 }
 
 /**
  * Get channels that the current user has NOT joined (for discovery)
  */
 export async function getDiscoverChannels(joinedIds: string[]): Promise<ChannelWithDetails[]> {
-  if (USE_DATABASE) {
-    // TODO: Implement database fetch
+  let query = supabase
+    .from('channels')
+    .select('*')
+    .order('name');
+  
+  if (joinedIds.length > 0) {
+    query = query.not('id', 'in', `(${joinedIds.join(',')})`);
   }
   
-  return mockChannels.filter(c => !joinedIds.includes(c.id));
+  const { data, error } = await query;
+  
+  if (error) {
+    console.error('Error fetching discover channels:', error);
+    return [];
+  }
+  
+  return data ?? [];
 }
 
 /**
  * Get channel admins for a specific channel
  */
 export async function getChannelAdmins(channelId: string): Promise<DbChannelAdmin[]> {
-  if (USE_DATABASE) {
-    // TODO: Implement database fetch
-    // const { data, error } = await supabase
-    //   .from('channel_admins')
-    //   .select('*')
-    //   .eq('channel_id', channelId);
-    // return data ?? [];
+  const { data, error } = await supabase
+    .from('channel_admins')
+    .select('*')
+    .eq('channel_id', channelId);
+  
+  if (error) {
+    console.error('Error fetching channel admins:', error);
+    return [];
   }
   
-  return mockChannelAdmins.filter(ca => ca.channel_id === channelId);
+  return data ?? [];
 }
 
 /**
  * Check if a user is admin of a specific channel
  */
 export async function isUserChannelAdmin(channelId: string, userId: string): Promise<boolean> {
-  if (USE_DATABASE) {
-    // TODO: Implement database check
+  const { data, error } = await supabase
+    .from('channel_admins')
+    .select('id')
+    .eq('channel_id', channelId)
+    .eq('user_id', userId)
+    .maybeSingle();
+  
+  if (error) {
+    console.error('Error checking channel admin:', error);
+    return false;
   }
   
-  return mockChannelAdmins.some(ca => ca.channel_id === channelId && ca.user_id === userId);
+  return !!data;
 }
 
 /**
  * Get all channels where a user is admin
  */
 export async function getAdminChannels(userId: string): Promise<ChannelWithDetails[]> {
-  if (USE_DATABASE) {
-    // TODO: Implement database fetch with join
+  const { data: adminRecords, error: adminError } = await supabase
+    .from('channel_admins')
+    .select('channel_id')
+    .eq('user_id', userId);
+  
+  if (adminError || !adminRecords || adminRecords.length === 0) {
+    return [];
   }
   
-  const adminChannelIds = mockChannelAdmins
-    .filter(ca => ca.user_id === userId)
-    .map(ca => ca.channel_id);
-  
-  return mockChannels.filter(c => adminChannelIds.includes(c.id));
+  const channelIds = adminRecords.map(r => r.channel_id);
+  return getJoinedChannels(channelIds);
 }
 
 /**
@@ -128,28 +162,24 @@ export async function getAdminChannels(userId: string): Promise<ChannelWithDetai
 export async function createChannel(
   channel: Omit<ChannelWithDetails, 'id' | 'created_at' | 'updated_at' | 'member_count' | 'post_count'>
 ): Promise<ChannelWithDetails | null> {
-  if (USE_DATABASE) {
-    // TODO: Implement database insert
-    // const { data, error } = await supabase
-    //   .from('channels')
-    //   .insert(channel)
-    //   .select()
-    //   .single();
-    // return data;
+  const { data, error } = await supabase
+    .from('channels')
+    .insert({
+      name: channel.name,
+      slug: channel.slug,
+      description: channel.description,
+      icon: channel.icon,
+      color: channel.color,
+    })
+    .select()
+    .single();
+  
+  if (error) {
+    console.error('Error creating channel:', error);
+    return null;
   }
   
-  // Mock create
-  const newChannel: ChannelWithDetails = {
-    ...channel,
-    id: `channel-${Date.now()}`,
-    member_count: 0,
-    post_count: 0,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
-  
-  mockChannels.push(newChannel);
-  return newChannel;
+  return data;
 }
 
 /**
@@ -159,115 +189,77 @@ export async function updateChannel(
   channelId: string,
   updates: Partial<Pick<ChannelWithDetails, 'name' | 'slug' | 'description' | 'icon' | 'color'>>
 ): Promise<ChannelWithDetails | null> {
-  if (USE_DATABASE) {
-    // TODO: Implement database update
+  const { data, error } = await supabase
+    .from('channels')
+    .update(updates)
+    .eq('id', channelId)
+    .select()
+    .single();
+  
+  if (error) {
+    console.error('Error updating channel:', error);
+    return null;
   }
   
-  const channelIndex = mockChannels.findIndex(c => c.id === channelId);
-  if (channelIndex === -1) return null;
-  
-  mockChannels[channelIndex] = {
-    ...mockChannels[channelIndex],
-    ...updates,
-    updated_at: new Date().toISOString(),
-  };
-  
-  return mockChannels[channelIndex];
+  return data;
 }
 
 /**
  * Delete a channel (admin only)
  */
 export async function deleteChannel(channelId: string): Promise<boolean> {
-  if (USE_DATABASE) {
-    // TODO: Implement database delete
+  const { error } = await supabase
+    .from('channels')
+    .delete()
+    .eq('id', channelId);
+  
+  if (error) {
+    console.error('Error deleting channel:', error);
+    return false;
   }
   
-  const channelIndex = mockChannels.findIndex(c => c.id === channelId);
-  if (channelIndex === -1) return false;
-  
-  mockChannels.splice(channelIndex, 1);
   return true;
 }
 
 /**
  * Join a channel (add user to channel membership)
+ * Note: This is a placeholder - will need a channel_members table in the future
  */
 export async function joinChannel(channelId: string, userId: string): Promise<boolean> {
-  if (USE_DATABASE) {
-    // TODO: Implement database insert for channel_members
-    // const { error } = await supabase
-    //   .from('channel_members')
-    //   .insert({ channel_id: channelId, user_id: userId });
-    // return !error;
-  }
-  
-  // Mock join - add channel to user's joinedChannels
-  // In a real app, this would be a separate membership table
-  const { mockUsers } = await import('@/data/mockUsers');
-  const userIndex = mockUsers.findIndex(u => u.user_id === userId);
-  if (userIndex === -1) return false;
-  
-  if (!mockUsers[userIndex].joinedChannels.includes(channelId)) {
-    mockUsers[userIndex].joinedChannels.push(channelId);
-    
-    // Update channel member count
-    const channelIndex = mockChannels.findIndex(c => c.id === channelId);
-    if (channelIndex !== -1) {
-      mockChannels[channelIndex].member_count += 1;
-    }
-  }
-  
+  // TODO: Implement with channel_members table
+  console.log('Join channel:', channelId, userId);
   return true;
 }
 
 /**
  * Leave a channel (remove user from channel membership)
+ * Note: This is a placeholder - will need a channel_members table in the future
  */
 export async function leaveChannel(channelId: string, userId: string): Promise<boolean> {
-  if (USE_DATABASE) {
-    // TODO: Implement database delete for channel_members
-    // const { error } = await supabase
-    //   .from('channel_members')
-    //   .delete()
-    //   .eq('channel_id', channelId)
-    //   .eq('user_id', userId);
-    // return !error;
-  }
-  
-  // Mock leave - remove channel from user's joinedChannels
-  const { mockUsers } = await import('@/data/mockUsers');
-  const userIndex = mockUsers.findIndex(u => u.user_id === userId);
-  if (userIndex === -1) return false;
-  
-  const channelIndex = mockUsers[userIndex].joinedChannels.indexOf(channelId);
-  if (channelIndex !== -1) {
-    mockUsers[userIndex].joinedChannels.splice(channelIndex, 1);
-    
-    // Update channel member count
-    const chIndex = mockChannels.findIndex(c => c.id === channelId);
-    if (chIndex !== -1 && mockChannels[chIndex].member_count > 0) {
-      mockChannels[chIndex].member_count -= 1;
-    }
-  }
-  
+  // TODO: Implement with channel_members table
+  console.log('Leave channel:', channelId, userId);
   return true;
 }
 
-// Legacy compatibility - synchronous versions for immediate use in components
+// Legacy synchronous versions - now return empty until async data loads
+// Components should migrate to using the async versions with React Query or useEffect
 
 export function getAllChannelsSync(): ChannelWithDetails[] {
-  return mockChannels;
+  console.warn('getAllChannelsSync is deprecated. Use getAllChannels() with async/await instead.');
+  return [];
 }
 
 export function getChannelBySlugSync(slug: string): ChannelWithDetails | null {
-  return mockChannels.find(c => c.slug === slug) ?? null;
+  console.warn('getChannelBySlugSync is deprecated. Use getChannelBySlug() with async/await instead.');
+  return null;
 }
 
 export function getJoinedChannelsSync(channelIds: string[]): ChannelWithDetails[] {
-  return mockChannels.filter(c => channelIds.includes(c.id));
+  console.warn('getJoinedChannelsSync is deprecated. Use getJoinedChannels() with async/await instead.');
+  return [];
 }
 
 export function getDiscoverChannelsSync(joinedIds: string[]): ChannelWithDetails[] {
-  return mockChannels.filter(c => !joinedIds.includes(c.id));
+  console.warn('getDiscoverChannelsSync is deprecated. Use getDiscoverChannels() with async/await instead.');
+  return [];
 }
