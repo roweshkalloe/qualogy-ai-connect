@@ -105,16 +105,14 @@ const Home = () => {
                     transition={{ delay: 0.3 + index * 0.08, duration: 0.4 }}
                     className="relative"
                   >
-                    {/* Trending indicator badge */}
-                    <div className="absolute -left-2 top-4 z-10 hidden lg:flex">
-                      <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 border border-primary/20">
+                    {/* Trending indicator badge - positioned inside card */}
+                    <div className="absolute right-3 sm:right-4 top-3 sm:top-4 z-10">
+                      <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-primary/10 border border-primary/20 backdrop-blur-sm">
                         <TrendingUp className="w-3 h-3 text-primary" />
                         <span className="text-xs font-medium text-primary">#{index + 1}</span>
                       </div>
                     </div>
-                    <div className="lg:ml-6">
-                      <PostCard post={post} variant="trending" />
-                    </div>
+                    <PostCard post={post} variant="trending" />
                   </motion.div>
                 ))}
               </div>
