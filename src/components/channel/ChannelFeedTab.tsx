@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowUpDown, Clock, Heart, MessageSquareText } from 'lucide-react';
+import { Clock, Heart, MessageSquareText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import PostCard from '@/components/PostCard';
-import { Post } from '@/data/mockData';
+import { Post } from '@/services/postService';
 
 interface ChannelFeedTabProps {
   posts: Post[];
@@ -15,9 +15,9 @@ const ChannelFeedTab = ({ posts, channelName }: ChannelFeedTabProps) => {
 
   const sortedPosts = [...posts].sort((a, b) => {
     if (sortBy === 'liked') {
-      return b.likes - a.likes;
+      return b.likes_count - a.likes_count;
     }
-    return b.createdAt.getTime() - a.createdAt.getTime();
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
   });
 
   if (posts.length === 0) {
