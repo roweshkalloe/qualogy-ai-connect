@@ -17,9 +17,20 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [loginSuccess, setLoginSuccess] = useState(false);
 
   const { user, loading, signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
   const navigate = useNavigate();
+
+  // Handle redirect after successful login animation
+  useEffect(() => {
+    if (loginSuccess) {
+      const timer = setTimeout(() => {
+        navigate("/home", { replace: true });
+      }, 1200);
+      return () => clearTimeout(timer);
+    }
+  }, [loginSuccess, navigate]);
 
   // Redirect authenticated users to /home
   useEffect(() => {
@@ -61,7 +72,7 @@ const Login = () => {
           }
         } else {
           toast.success("Account created successfully!");
-          navigate("/home", { replace: true });
+          setLoginSuccess(true);
         }
       } else {
         const { error } = await signIn(email, password);
@@ -73,7 +84,7 @@ const Login = () => {
           }
         } else {
           toast.success("Welcome back!");
-          navigate("/home", { replace: true });
+          setLoginSuccess(true);
         }
       }
     } catch (err) {
@@ -147,8 +158,15 @@ const Login = () => {
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
         className="relative w-full max-w-md mx-4 bg-card/95 backdrop-blur-md rounded-3xl shadow-2xl border border-border/50"
       >
-        {/* Decorative top gradient */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-primary/80 to-primary" />
+        {/* Decorative top gradient with fill animation */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-muted/30 overflow-hidden">
+          <motion.div
+            className="h-full bg-gradient-to-r from-primary via-primary/80 to-primary"
+            initial={{ width: loginSuccess ? "0%" : "100%" }}
+            animate={{ width: "100%" }}
+            transition={loginSuccess ? { duration: 1.2, ease: "easeInOut" } : { duration: 0 }}
+          />
+        </div>
 
         {/* Header with logo */}
         <div className="relative px-8 pt-8 pb-6">
