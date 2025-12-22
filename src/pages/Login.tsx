@@ -78,7 +78,7 @@ const Login = () => {
         const { error } = await signIn(email, password);
         if (error) {
           if (error.message.includes("Invalid login credentials")) {
-            toast.error("Invalid email or password");
+            toast.error("Invalid email or password. If you haven't registered yet, please sign up first.");
           } else {
             toast.error(error.message);
           }
