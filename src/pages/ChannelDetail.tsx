@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Users, FileText, Blocks, Palette, Coffee, Brain, Cloud, TrendingUp, Megaphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import PageTransition from '@/components/PageTransition';
 import { Separator } from '@/components/ui/separator';
 import { 
   getChannelBySlug, 
@@ -66,6 +67,7 @@ const ChannelDetail = () => {
   };
 
   return (
+    <PageTransition>
     <div className="min-h-screen pt-16 lg:pt-18 pb-20 md:pb-8">
       {/* Channel Header */}
       <motion.header
@@ -198,6 +200,7 @@ const ChannelDetail = () => {
         </AnimatePresence>
       </div>
     </div>
+    </PageTransition>
   );
 };
 
