@@ -160,17 +160,17 @@ const PostCard = ({ post, variant = 'default' }: PostCardProps) => {
               )}
 
               {/* Add comment */}
-              <div className="flex items-center gap-2 pt-2">
+              <div className="flex items-center gap-2 pt-2 pb-1">
                 <Input
                   placeholder="Write a comment..."
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  className="flex-1 text-sm bg-secondary/30 border-border/50 focus:border-primary/50"
+                  className="flex-1 text-sm h-9 bg-secondary/30 border-border/50 focus:border-primary/50"
                 />
                 <Button 
                   size="icon" 
                   variant="ghost" 
-                  className="text-primary hover:bg-primary/10"
+                  className="text-primary hover:bg-primary/10 h-9 w-9"
                 >
                   <Send className="w-4 h-4" />
                 </Button>
