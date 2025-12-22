@@ -2,18 +2,23 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TrendingUp, Sparkles, Compass, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import MainLayout from "@/components/MainLayout";
 import PageTransition from "@/components/PageTransition";
 import PostCard from "@/components/PostCard";
 import { Button } from "@/components/ui/button";
-import { currentUser, getTrendingPosts, getForYouPosts, channels } from "@/data/mockData";
+import { currentUser, getTrendingPosts, getForYouPosts } from "@/data/mockData";
+import { useAuth } from "@/hooks/useAuth";
 
 const greetings = ["Hey", "Hi", "Hello", "Welcome"];
 
 const Home = () => {
   const [currentGreeting, setCurrentGreeting] = useState(0);
+  const { user } = useAuth();
   const trendingPosts = getTrendingPosts();
   const forYouPosts = getForYouPosts(currentUser.id, currentUser.joinedChannels);
+  
+  // Get first name from authenticated user
+  const fullName = user?.user_metadata?.full_name || '';
+  const firstName = fullName.split(' ')[0] || 'there';
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -51,7 +56,7 @@ const Home = () => {
                   >
                     {greetings[currentGreeting]},{" "}
                     <span className="text-primary">
-                      {currentUser.name.split(" ")[0]}
+                      {firstName}
                     </span>
                   </motion.h1>
                 </AnimatePresence>
