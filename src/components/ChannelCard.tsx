@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Blocks, Palette, Coffee, Brain, Cloud, Users, TrendingUp, Megaphone } from 'lucide-react';
 import { Channel } from '@/data/mockData';
 
@@ -20,13 +21,19 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 const ChannelCard = ({ channel, isJoined = false, delay = 0 }: ChannelCardProps) => {
+  const navigate = useNavigate();
   const IconComponent = iconMap[channel.icon] || Blocks;
+
+  const handleClick = () => {
+    navigate(`/channels/${channel.slug}`);
+  };
 
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay }}
+      onClick={handleClick}
       className="group flex items-center gap-4 p-4 bg-card rounded-xl border border-border card-interactive cursor-pointer"
     >
       {/* Icon */}

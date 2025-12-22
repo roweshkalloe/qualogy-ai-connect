@@ -10,6 +10,7 @@ import AppLayout from "./components/AppLayout";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Channels from "./pages/Channels";
+import ChannelDetail from "./pages/ChannelDetail";
 import Profile from "./pages/Profile";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
@@ -36,6 +37,7 @@ const App = () => (
             }>
               <Route path="/home" element={<Home />} />
               <Route path="/channels" element={<Channels />} />
+              <Route path="/channels/:slug" element={<ChannelDetail />} />
               <Route path="/profile" element={<Profile />} />
             </Route>
             
