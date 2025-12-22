@@ -119,7 +119,7 @@ const Home = () => {
             </motion.section>
 
             {/* Visual separator */}
-            <div className="relative pb-4">
+            <div className="relative pb-2">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-border/50" />
               </div>
