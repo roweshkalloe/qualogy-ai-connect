@@ -7,6 +7,7 @@ import { FloatingInput } from '@/components/ui/floating-input';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import qualogyLogo from '@/assets/qualogy-logo.png';
+import loginBg from '@/assets/login-bg.jpg';
 
 type AuthMode = 'signin' | 'signup' | 'forgot';
 
@@ -131,22 +132,20 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center overflow-hidden">
-      {/* Background with blur and overlay */}
+    <div className="fixed inset-0 flex items-center justify-center overflow-hidden">
+      {/* Background with subtle blur and overlay */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop')`,
-        }}
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105"
+        style={{ backgroundImage: `url(${loginBg})` }}
       />
-      <div className="absolute inset-0 backdrop-blur-sm bg-foreground/40" />
+      <div className="absolute inset-0 backdrop-blur-[3px] bg-foreground/30" />
       
-      {/* Login Card */}
+      {/* Login Card - centered, not full height */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className="relative w-full max-w-md mx-4 bg-card/95 backdrop-blur-md rounded-3xl shadow-2xl border border-border/50 overflow-hidden"
+        className="relative w-full max-w-md mx-4 bg-card/95 backdrop-blur-md rounded-3xl shadow-2xl border border-border/50"
       >
         {/* Decorative top gradient */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-primary/80 to-primary" />
