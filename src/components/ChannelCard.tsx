@@ -1,7 +1,17 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Blocks, Palette, Coffee, Brain, Cloud, Users, TrendingUp, Megaphone } from 'lucide-react';
-import { Channel } from '@/data/mockData';
+import { ChevronRight, Blocks, Palette, Coffee, Brain, Cloud, Users, TrendingUp, Megaphone, Code, Briefcase, Database, Server } from 'lucide-react';
+
+interface Channel {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  icon: string;
+  member_count?: number;
+  post_count?: number;
+  color: string;
+}
 
 interface ChannelCardProps {
   channel: Channel;
@@ -18,6 +28,10 @@ const iconMap: Record<string, React.ElementType> = {
   Users: Users,
   TrendingUp: TrendingUp,
   Megaphone: Megaphone,
+  Code: Code,
+  Briefcase: Briefcase,
+  Database: Database,
+  Server: Server,
 };
 
 const ChannelCard = ({ channel, isJoined = false, delay = 0 }: ChannelCardProps) => {
@@ -50,7 +64,7 @@ const ChannelCard = ({ channel, isJoined = false, delay = 0 }: ChannelCardProps)
           )}
         </div>
         <p className="text-sm text-muted-foreground truncate mt-0.5">
-          {channel.description}
+          {channel.description || 'No description'}
         </p>
       </div>
 
