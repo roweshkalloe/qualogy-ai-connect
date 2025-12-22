@@ -190,6 +190,70 @@ export async function deleteChannel(channelId: string): Promise<boolean> {
   return true;
 }
 
+/**
+ * Join a channel (add user to channel membership)
+ */
+export async function joinChannel(channelId: string, userId: string): Promise<boolean> {
+  if (USE_DATABASE) {
+    // TODO: Implement database insert for channel_members
+    // const { error } = await supabase
+    //   .from('channel_members')
+    //   .insert({ channel_id: channelId, user_id: userId });
+    // return !error;
+  }
+  
+  // Mock join - add channel to user's joinedChannels
+  // In a real app, this would be a separate membership table
+  const { mockUsers } = await import('@/data/mockUsers');
+  const userIndex = mockUsers.findIndex(u => u.user_id === userId);
+  if (userIndex === -1) return false;
+  
+  if (!mockUsers[userIndex].joinedChannels.includes(channelId)) {
+    mockUsers[userIndex].joinedChannels.push(channelId);
+    
+    // Update channel member count
+    const channelIndex = mockChannels.findIndex(c => c.id === channelId);
+    if (channelIndex !== -1) {
+      mockChannels[channelIndex].member_count += 1;
+    }
+  }
+  
+  return true;
+}
+
+/**
+ * Leave a channel (remove user from channel membership)
+ */
+export async function leaveChannel(channelId: string, userId: string): Promise<boolean> {
+  if (USE_DATABASE) {
+    // TODO: Implement database delete for channel_members
+    // const { error } = await supabase
+    //   .from('channel_members')
+    //   .delete()
+    //   .eq('channel_id', channelId)
+    //   .eq('user_id', userId);
+    // return !error;
+  }
+  
+  // Mock leave - remove channel from user's joinedChannels
+  const { mockUsers } = await import('@/data/mockUsers');
+  const userIndex = mockUsers.findIndex(u => u.user_id === userId);
+  if (userIndex === -1) return false;
+  
+  const channelIndex = mockUsers[userIndex].joinedChannels.indexOf(channelId);
+  if (channelIndex !== -1) {
+    mockUsers[userIndex].joinedChannels.splice(channelIndex, 1);
+    
+    // Update channel member count
+    const chIndex = mockChannels.findIndex(c => c.id === channelId);
+    if (chIndex !== -1 && mockChannels[chIndex].member_count > 0) {
+      mockChannels[chIndex].member_count -= 1;
+    }
+  }
+  
+  return true;
+}
+
 // Legacy compatibility - synchronous versions for immediate use in components
 
 export function getAllChannelsSync(): ChannelWithDetails[] {

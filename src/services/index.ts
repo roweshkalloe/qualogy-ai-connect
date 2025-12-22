@@ -5,10 +5,10 @@
  * Components should import from here rather than individual service files.
  * 
  * Usage:
- * import { userService, channelService } from '@/services';
+ * import { userService, channelService, postService } from '@/services';
  * 
  * Or for specific functions:
- * import { getCurrentUser, getAllChannels } from '@/services';
+ * import { getCurrentUser, getAllChannels, getAllPosts } from '@/services';
  */
 
 // User Service
@@ -18,6 +18,7 @@ export {
   getUserByProfileId,
   getAllUsers,
   updateUserProfile,
+  deleteUserProfile,
   hasRole,
   getUserRoles,
   isAdmin,
@@ -40,6 +41,8 @@ export {
   createChannel,
   updateChannel,
   deleteChannel,
+  joinChannel,
+  leaveChannel,
   // Sync versions for legacy compatibility
   getAllChannelsSync,
   getChannelBySlugSync,
@@ -47,5 +50,29 @@ export {
   getDiscoverChannelsSync,
 } from './channelService';
 
+// Post Service
+export {
+  getAllPosts,
+  getPostsByChannel,
+  getPostsByUser,
+  getPostById,
+  getFeedPosts,
+  createPost,
+  updatePost,
+  deletePost,
+  likePost,
+  unlikePost,
+  favoritePost,
+  unfavoritePost,
+  addComment,
+  deleteComment,
+  getFavoritedPosts,
+  // Sync versions for legacy compatibility
+  getAllPostsSync,
+  getPostsByChannelSync,
+  getFeedPostsSync,
+} from './postService';
+
 // Re-export types
 export type { UserProfile, ChannelWithDetails, AppRole } from '@/types/database';
+export type { Post, PostComment, CreatePostInput, UpdatePostInput } from './postService';

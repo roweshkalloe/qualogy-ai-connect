@@ -95,6 +95,27 @@ export async function updateUserProfile(
 }
 
 /**
+ * Delete user profile (mock behavior - marks as deleted)
+ */
+export async function deleteUserProfile(userId: string): Promise<boolean> {
+  if (USE_DATABASE) {
+    // TODO: Implement database delete
+    // const { error } = await supabase
+    //   .from('profiles')
+    //   .delete()
+    //   .eq('user_id', userId);
+    // return !error;
+  }
+  
+  // Mock delete - remove user from array
+  const userIndex = mockUsers.findIndex(u => u.user_id === userId);
+  if (userIndex === -1) return false;
+  
+  mockUsers.splice(userIndex, 1);
+  return true;
+}
+
+/**
  * Check if user has a specific role
  */
 export async function hasRole(userId: string, role: AppRole): Promise<boolean> {
