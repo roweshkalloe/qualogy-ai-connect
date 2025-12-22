@@ -168,6 +168,20 @@
   .slide-up {
     animation: slideUp 0.4s ease-out forwards;
   }
+  
+  /* Section heading styles */
+  .section-title {
+    @apply text-xl lg:text-2xl font-semibold text-foreground tracking-tight;
+  }
+  
+  .section-subtitle {
+    @apply text-sm text-muted-foreground;
+  }
+  
+  /* Smooth focus states */
+  .focus-ring {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
 }
 
 @keyframes fadeIn {
@@ -199,4 +213,15 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection styling */
+::selection {
+  background-color: hsl(var(--primary) / 0.15);
+  color: hsl(var(--foreground));
 }
