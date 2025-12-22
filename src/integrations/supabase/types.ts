@@ -14,81 +14,12 @@ export type Database = {
   }
   public: {
     Tables: {
-      channel_admins: {
-        Row: {
-          channel_id: string
-          created_at: string
-          id: string
-          user_id: string
-        }
-        Insert: {
-          channel_id: string
-          created_at?: string
-          id?: string
-          user_id: string
-        }
-        Update: {
-          channel_id?: string
-          created_at?: string
-          id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "channel_admins_channel_id_fkey"
-            columns: ["channel_id"]
-            isOneToOne: false
-            referencedRelation: "channels"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      channels: {
-        Row: {
-          color: string
-          created_at: string
-          description: string | null
-          icon: string
-          id: string
-          member_count: number
-          name: string
-          post_count: number
-          slug: string
-          updated_at: string
-        }
-        Insert: {
-          color?: string
-          created_at?: string
-          description?: string | null
-          icon?: string
-          id?: string
-          member_count?: number
-          name: string
-          post_count?: number
-          slug: string
-          updated_at?: string
-        }
-        Update: {
-          color?: string
-          created_at?: string
-          description?: string | null
-          icon?: string
-          id?: string
-          member_count?: number
-          name?: string
-          post_count?: number
-          slug?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           avatar_url: string | null
           created_at: string
           full_name: string | null
           id: string
-          profession: string | null
           updated_at: string
           user_id: string
         }
@@ -97,7 +28,6 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
-          profession?: string | null
           updated_at?: string
           user_id: string
         }
@@ -106,29 +36,7 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
-          profession?: string | null
           updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      user_roles: {
-        Row: {
-          created_at: string
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
         Relationships: []
@@ -138,16 +46,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
-      app_role: "admin" | "channel_admin" | "user"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -274,8 +176,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      app_role: ["admin", "channel_admin", "user"],
-    },
+    Enums: {},
   },
 } as const

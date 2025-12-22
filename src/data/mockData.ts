@@ -1,22 +1,4 @@
-/**
- * Mock Data - Legacy compatibility layer
- * 
- * This file maintains backward compatibility with existing components.
- * New components should use services from @/services instead.
- * 
- * The data here is derived from the new database-aligned mock data files.
- */
-
-import { getCurrentUserSync } from '@/services/userService';
-import { 
-  getAllChannelsSync, 
-  getJoinedChannelsSync, 
-  getDiscoverChannelsSync 
-} from '@/services/channelService';
-import { UserProfile, ChannelWithDetails } from '@/types/database';
-
-// ============= Legacy Interfaces =============
-
+// Mock Users
 export interface User {
   id: string;
   name: string;
@@ -102,7 +84,7 @@ export interface Showcase {
   author: string;
 }
 
-export interface AppNotification {
+export interface Notification {
   id: string;
   type: 'like' | 'comment' | 'system' | 'welcome';
   title: string;
@@ -112,43 +94,8 @@ export interface AppNotification {
   icon: string;
 }
 
-// Legacy Notification type alias (avoid conflict with browser Notification)
-export type Notification = AppNotification;
-
-// ============= Helper Functions =============
-
-// Helper to convert UserProfile to legacy User format
-function toUser(profile: UserProfile): User {
-  return {
-    id: profile.user_id,
-    name: profile.full_name || 'Unknown User',
-    email: profile.email,
-    profession: profile.profession || '',
-    avatar: profile.avatar_url || '',
-    badge: profile.badge || '',
-    joinedChannels: profile.joinedChannels,
-    stats: profile.stats,
-  };
-}
-
-// Helper to convert ChannelWithDetails to legacy Channel format
-function toChannel(channel: ChannelWithDetails): Channel {
-  return {
-    id: channel.id,
-    name: channel.name,
-    slug: channel.slug,
-    description: channel.description || '',
-    icon: channel.icon,
-    memberCount: channel.member_count,
-    postCount: channel.post_count,
-    color: channel.color,
-  };
-}
-
-// ============= Current User =============
-
-const currentUserProfile = getCurrentUserSync();
-export const currentUser: User = currentUserProfile ? toUser(currentUserProfile) : {
+// Current user
+export const currentUser: User = {
   id: 'user-1',
   name: 'Alex Johnson',
   email: 'alex.johnson@qualogy.com',
@@ -163,12 +110,91 @@ export const currentUser: User = currentUserProfile ? toUser(currentUserProfile)
   },
 };
 
-// ============= Channels =============
+// All channels
+export const channels: Channel[] = [
+  {
+    id: 'channel-1',
+    name: 'Mendix Masters',
+    slug: 'mendix-masters',
+    description: 'The hub for low-code development, Mendix tips, and best practices',
+    icon: 'Blocks',
+    memberCount: 156,
+    postCount: 342,
+    color: 'bg-primary/10',
+  },
+  {
+    id: 'channel-2',
+    name: 'UI/UX Design',
+    slug: 'ui-ux-design',
+    description: 'Design systems, user research, and creating beautiful interfaces',
+    icon: 'Palette',
+    memberCount: 89,
+    postCount: 187,
+    color: 'bg-purple-100',
+  },
+  {
+    id: 'channel-3',
+    name: 'Java Jungle',
+    slug: 'java-jungle',
+    description: 'JVM deep dives, Spring Boot, microservices architecture',
+    icon: 'Coffee',
+    memberCount: 203,
+    postCount: 521,
+    color: 'bg-amber-100',
+  },
+  {
+    id: 'channel-4',
+    name: 'Data & AI',
+    slug: 'data-ai',
+    description: 'Machine Learning, LLMs, data engineering, and AI applications',
+    icon: 'Brain',
+    memberCount: 178,
+    postCount: 298,
+    color: 'bg-blue-100',
+  },
+  {
+    id: 'channel-5',
+    name: 'Cloud Native',
+    slug: 'cloud-native',
+    description: 'Kubernetes, Docker, AWS, Azure, and cloud architecture',
+    icon: 'Cloud',
+    memberCount: 134,
+    postCount: 256,
+    color: 'bg-sky-100',
+  },
+  {
+    id: 'channel-6',
+    name: 'HR & People',
+    slug: 'hr-people',
+    description: 'People development, culture, and HR innovation',
+    icon: 'Users',
+    memberCount: 67,
+    postCount: 124,
+    color: 'bg-green-100',
+  },
+  {
+    id: 'channel-7',
+    name: 'Sales Excellence',
+    slug: 'sales-excellence',
+    description: 'Sales strategies, client success, and business development',
+    icon: 'TrendingUp',
+    memberCount: 54,
+    postCount: 98,
+    color: 'bg-orange-100',
+  },
+  {
+    id: 'channel-8',
+    name: 'Marketing & Growth',
+    slug: 'marketing-growth',
+    description: 'Digital marketing, brand building, and growth hacking',
+    icon: 'Megaphone',
+    memberCount: 72,
+    postCount: 156,
+    color: 'bg-pink-100',
+  },
+];
 
-export const channels: Channel[] = getAllChannelsSync().map(toChannel);
-
-// ============= Guided Practice =============
-
+// Guided Practice content
 export const guidedPractices: GuidedPractice[] = [
   // Mendix
   { id: 'gp-1', channelId: 'channel-1', title: 'Building Your First Mendix App', description: 'Step-by-step guide to creating a basic CRUD application with best practices', level: 'Beginner' },
@@ -193,8 +219,7 @@ export const guidedPractices: GuidedPractice[] = [
   { id: 'gp-13', channelId: 'channel-8', title: 'AI Content Generation', description: 'Create compelling marketing content with AI assistance', level: 'Beginner' },
 ];
 
-// ============= Tool Library =============
-
+// Tool Library
 export const tools: Tool[] = [
   // Mendix
   { id: 'tool-1', channelId: 'channel-1', name: 'Mendix Studio Pro', description: 'The main IDE for building Mendix applications', type: 'Internal' },
@@ -219,8 +244,7 @@ export const tools: Tool[] = [
   { id: 'tool-13', channelId: 'channel-8', name: 'HubSpot', description: 'Marketing automation and analytics', type: 'External' },
 ];
 
-// ============= Prompt Library =============
-
+// Prompt Library
 export const prompts: Prompt[] = [
   // Mendix
   { id: 'prompt-1', channelId: 'channel-1', title: 'Microflow Generator', description: 'Generate Mendix microflow logic from requirements', prompt: 'I need a Mendix microflow that [describe the business logic]. Include error handling and validation steps.' },
@@ -244,8 +268,7 @@ export const prompts: Prompt[] = [
   { id: 'prompt-12', channelId: 'channel-8', title: 'Social Media Post Creator', description: 'Generate engaging social content', prompt: 'Create a LinkedIn post about [topic] for Qualogy. Make it engaging, professional, and include a call to action.' },
 ];
 
-// ============= Showcases =============
-
+// Showcases
 export const showcases: Showcase[] = [
   // Mendix
   { id: 'sc-1', channelId: 'channel-1', title: 'Automated Client Onboarding', story: 'Used AI to generate initial domain models and microflows, reducing development time by 60%. The AI suggestions for validation rules saved us countless hours of debugging.', role: 'Senior Mendix Developer', author: 'Rachel Zane' },
@@ -266,8 +289,7 @@ export const showcases: Showcase[] = [
   { id: 'sc-9', channelId: 'channel-8', title: 'Content Calendar Automation', story: 'AI now drafts our weekly social media content based on trending topics and company news. Engagement is up 40% while time spent on content creation dropped by half.', role: 'Marketing Lead', author: 'Katrina Bennett' },
 ];
 
-// ============= Channel Helper Functions =============
-
+// Helper functions for channel details
 export const getChannelBySlug = (slug: string): Channel | undefined => {
   return channels.find(c => c.slug === slug);
 };
@@ -292,8 +314,7 @@ export const getChannelShowcases = (channelId: string): Showcase[] => {
   return showcases.filter(s => s.channelId === channelId);
 };
 
-// ============= Mock Posts =============
-
+// Mock posts
 export const posts: Post[] = [
   {
     id: 'post-1',
@@ -419,9 +440,8 @@ export const posts: Post[] = [
   },
 ];
 
-// ============= Notifications =============
-
-export const notifications: AppNotification[] = [
+// Notifications
+export const notifications: Notification[] = [
   {
     id: 'notif-1',
     type: 'like',
@@ -460,8 +480,7 @@ export const notifications: AppNotification[] = [
   },
 ];
 
-// ============= General Helper Functions =============
-
+// Helper functions
 export const getTimeAgo = (date: Date): string => {
   const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
   
@@ -498,9 +517,9 @@ export const getForYouPosts = (userId: string, joinedChannels: string[]): Post[]
 };
 
 export const getJoinedChannels = (channelIds: string[]): Channel[] => {
-  return getJoinedChannelsSync(channelIds).map(toChannel);
+  return channels.filter(c => channelIds.includes(c.id));
 };
 
 export const getDiscoverChannels = (joinedIds: string[]): Channel[] => {
-  return getDiscoverChannelsSync(joinedIds).map(toChannel);
+  return channels.filter(c => !joinedIds.includes(c.id));
 };
