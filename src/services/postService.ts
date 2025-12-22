@@ -383,10 +383,7 @@ export async function unfavoritePost(postId: string, userId: string): Promise<bo
 export async function getCommentsByPost(postId: string): Promise<PostComment[]> {
   const { data, error } = await supabase
     .from('post_comments')
-    .select(`
-      *,
-      profiles!inner(full_name, avatar_url)
-    `)
+    .select('*')
     .eq('post_id', postId)
     .order('created_at', { ascending: true });
 
@@ -395,16 +392,29 @@ export async function getCommentsByPost(postId: string): Promise<PostComment[]> 
     return [];
   }
 
-  return (data || []).map(comment => ({
+  if (!data || data.length === 0) return [];
+
+  // Fetch profiles for all comment authors
+  const userIds = [...new Set(data.map(c => c.user_id))];
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('user_id, full_name, avatar_url')
+    .in('user_id', userIds);
+
+  const profileMap = new Map(
+    (profiles || []).map(p => [p.user_id, p])
+  );
+
+  return data.map(comment => ({
     id: comment.id,
     post_id: comment.post_id,
     user_id: comment.user_id,
     content: comment.content,
     created_at: comment.created_at,
-    author: {
-      full_name: (comment.profiles as any)?.full_name,
-      avatar_url: (comment.profiles as any)?.avatar_url,
-    },
+    author: profileMap.get(comment.user_id) ? {
+      full_name: profileMap.get(comment.user_id)?.full_name ?? null,
+      avatar_url: profileMap.get(comment.user_id)?.avatar_url ?? null,
+    } : undefined,
   }));
 }
 
@@ -415,10 +425,7 @@ export async function addComment(postId: string, userId: string, content: string
   const { data, error } = await supabase
     .from('post_comments')
     .insert({ post_id: postId, user_id: userId, content })
-    .select(`
-      *,
-      profiles!inner(full_name, avatar_url)
-    `)
+    .select()
     .single();
 
   if (error) {
@@ -426,16 +433,23 @@ export async function addComment(postId: string, userId: string, content: string
     return null;
   }
 
+  // Fetch the author profile
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('full_name, avatar_url')
+    .eq('user_id', userId)
+    .maybeSingle();
+
   return {
     id: data.id,
     post_id: data.post_id,
     user_id: data.user_id,
     content: data.content,
     created_at: data.created_at,
-    author: {
-      full_name: (data.profiles as any)?.full_name,
-      avatar_url: (data.profiles as any)?.avatar_url,
-    },
+    author: profile ? {
+      full_name: profile.full_name,
+      avatar_url: profile.avatar_url,
+    } : undefined,
   };
 }
 
