@@ -158,13 +158,13 @@ const Login = () => {
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
         className="relative w-full max-w-md mx-4 bg-card/95 backdrop-blur-md rounded-3xl shadow-2xl border border-border/50"
       >
-        {/* Decorative top gradient with fill animation */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-muted/30 overflow-hidden">
+        {/* Decorative top gradient with fill animation - only shows after login */}
+        <div className="absolute top-0 left-0 right-0 h-1 overflow-hidden rounded-t-3xl">
           <motion.div
-            className="h-full bg-gradient-to-r from-primary via-primary/80 to-primary"
-            initial={{ width: loginSuccess ? "0%" : "100%" }}
-            animate={{ width: "100%" }}
-            transition={loginSuccess ? { duration: 1.2, ease: "easeInOut" } : { duration: 0 }}
+            className="h-full bg-gradient-to-r from-primary via-primary/80 to-primary rounded-t-3xl"
+            initial={{ width: "0%" }}
+            animate={{ width: loginSuccess ? "100%" : "0%" }}
+            transition={{ duration: 1.2, ease: "easeInOut" }}
           />
         </div>
 
