@@ -222,23 +222,83 @@ export async function deleteChannel(channelId: string): Promise<boolean> {
 }
 
 /**
- * Join a channel (add user to channel membership)
- * Note: This is a placeholder - will need a channel_members table in the future
+ * Join a channel
  */
 export async function joinChannel(channelId: string, userId: string): Promise<boolean> {
-  // TODO: Implement with channel_members table
-  console.log('Join channel:', channelId, userId);
+  const { error } = await supabase
+    .from('channel_members')
+    .insert({ channel_id: channelId, user_id: userId });
+  
+  if (error) {
+    console.error('Error joining channel:', error);
+    return false;
+  }
+  
   return true;
 }
 
 /**
- * Leave a channel (remove user from channel membership)
- * Note: This is a placeholder - will need a channel_members table in the future
+ * Leave a channel
  */
 export async function leaveChannel(channelId: string, userId: string): Promise<boolean> {
-  // TODO: Implement with channel_members table
-  console.log('Leave channel:', channelId, userId);
+  const { error } = await supabase
+    .from('channel_members')
+    .delete()
+    .eq('channel_id', channelId)
+    .eq('user_id', userId);
+  
+  if (error) {
+    console.error('Error leaving channel:', error);
+    return false;
+  }
+  
   return true;
+}
+
+/**
+ * Check if user has joined a channel
+ */
+export async function isChannelMember(channelId: string, userId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('channel_members')
+    .select('id')
+    .eq('channel_id', channelId)
+    .eq('user_id', userId)
+    .maybeSingle();
+  
+  if (error) {
+    console.error('Error checking membership:', error);
+    return false;
+  }
+  
+  return !!data;
+}
+
+/**
+ * Get all channel IDs that a user has joined
+ */
+export async function getUserJoinedChannelIds(userId: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('channel_members')
+    .select('channel_id')
+    .eq('user_id', userId);
+  
+  if (error) {
+    console.error('Error fetching joined channel ids:', error);
+    return [];
+  }
+  
+  return (data || []).map(m => m.channel_id);
+}
+
+/**
+ * Get all channels a user has joined
+ */
+export async function getUserJoinedChannels(userId: string): Promise<ChannelWithDetails[]> {
+  const channelIds = await getUserJoinedChannelIds(userId);
+  if (channelIds.length === 0) return [];
+  
+  return getJoinedChannels(channelIds);
 }
 
 // Legacy synchronous versions - now return empty until async data loads
