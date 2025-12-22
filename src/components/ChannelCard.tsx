@@ -51,8 +51,13 @@ const ChannelCard = ({ channel, isJoined = false, delay = 0 }: ChannelCardProps)
       className="group flex items-center gap-4 p-4 bg-card rounded-xl border border-border card-interactive cursor-pointer"
     >
       {/* Icon */}
-      <div className={`flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center ${channel.color}`}>
-        <IconComponent className="w-6 h-6 text-primary" />
+      <div className="relative flex-shrink-0 w-12 h-12">
+        {/* Subtle glow effect */}
+        <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 blur-sm group-hover:blur-md transition-all duration-300" />
+        {/* Icon container */}
+        <div className="relative w-full h-full rounded-2xl bg-gradient-to-br from-primary/15 via-primary/10 to-transparent border border-primary/10 flex items-center justify-center backdrop-blur-sm group-hover:border-primary/20 group-hover:from-primary/20 transition-all duration-300">
+          <IconComponent className="w-5 h-5 text-primary group-hover:scale-110 transition-transform duration-300" />
+        </div>
       </div>
 
       {/* Content */}
