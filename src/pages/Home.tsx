@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TrendingUp, Sparkles, Zap, ArrowRight } from "lucide-react";
 import MainLayout from "@/components/MainLayout";
+import PageTransition from "@/components/PageTransition";
 import PostCard from "@/components/PostCard";
 import { currentUser, getTrendingPosts, getForYouPosts } from "@/data/mockData";
 
@@ -20,6 +21,7 @@ const Home = () => {
   }, []);
 
   return (
+    <PageTransition>
     <div className="min-h-screen pt-16 lg:pt-18 pb-20 md:pb-8">
       {/* Hero Section - Full Width */}
       <motion.section
@@ -148,6 +150,7 @@ const Home = () => {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 };
 

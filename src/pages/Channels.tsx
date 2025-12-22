@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Filter } from 'lucide-react';
 import MainLayout from '@/components/MainLayout';
+import PageTransition from '@/components/PageTransition';
 import ChannelCard from '@/components/ChannelCard';
 import { FloatingInput } from '@/components/ui/floating-input';
 import { currentUser, getJoinedChannels, getDiscoverChannels } from '@/data/mockData';
@@ -25,6 +26,7 @@ const Channels = () => {
   const filteredDiscover = filterChannels(discoverChannels);
 
   return (
+    <PageTransition>
     <MainLayout>
       <div className="max-w-3xl mx-auto space-y-8">
         {/* Header */}
@@ -107,6 +109,7 @@ const Channels = () => {
         )}
       </div>
     </MainLayout>
+    </PageTransition>
   );
 };
 

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Star, ChevronRight, User, Settings, LogOut, Camera } from 'lucide-react';
 import MainLayout from '@/components/MainLayout';
+import PageTransition from '@/components/PageTransition';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { currentUser } from '@/data/mockData';
@@ -112,6 +113,7 @@ const Profile = () => {
   ];
 
   return (
+    <PageTransition>
     <MainLayout>
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Profile Card */}
@@ -245,6 +247,7 @@ const Profile = () => {
         </motion.section>
       </div>
     </MainLayout>
+    </PageTransition>
   );
 };
 
