@@ -169,8 +169,7 @@ const PostCard = ({ post, variant = 'default' }: PostCardProps) => {
                 />
                 <Button 
                   size="icon" 
-                  variant="soft" 
-                  className="h-9 w-9 rounded-lg"
+                  className="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all duration-200 ease-out"
                 >
                   <Send className="w-4 h-4" />
                 </Button>
