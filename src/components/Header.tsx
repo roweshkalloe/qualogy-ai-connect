@@ -1,10 +1,9 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Bell, LogIn, LogOut, Home, Grid3X3, User, ChevronDown } from "lucide-react";
+import { Bell, LogOut, Home, Grid3X3, User, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import qualologyLogo from "@/assets/qualogy-logo.png";
 import NotificationsPopup from "./NotificationsPopup";
-import LoginModal from "./LoginModal";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,8 +27,8 @@ import {
 
 const Header = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const { user, signOut } = useAuth();
@@ -62,7 +61,7 @@ const Header = () => {
   }, [user]);
 
   const navItems = [
-    { path: "/", label: "Home", icon: Home },
+    { path: "/home", label: "Home", icon: Home },
     { path: "/channels", label: "Channels", icon: Grid3X3 },
     { path: "/profile", label: "Profile", icon: User },
   ];
@@ -72,6 +71,7 @@ const Header = () => {
   const handleSignOut = async () => {
     await signOut();
     toast.success('Signed out successfully');
+    navigate('/', { replace: true });
   };
 
   return (
@@ -80,7 +80,7 @@ const Header = () => {
         <div className="container mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-18">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
+            <Link to="/home" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
               <img src={qualologyLogo} alt="Qualogy" className="h-8 lg:h-9" />
             </Link>
 
@@ -118,40 +118,30 @@ const Header = () => {
                 </AnimatePresence>
               </div>
 
-              {/* User Menu / Login */}
-              {user ? (
-                <DropdownMenu modal={false}>
-                  <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-2 px-4 py-2 text-md font-medium text-foreground hover:bg-accent rounded-lg transition-colors">
-                      <Avatar className="w-8 h-8 shrink-0">
-                        <AvatarImage src={avatarUrl || undefined} alt={firstName} />
-                        <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
-                          {initials}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="hidden sm:inline">{firstName}</span>
-                      <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48 z-[100]">
-                    <DropdownMenuItem 
-                      onClick={() => setShowLogoutDialog(true)}
-                      className="text-destructive focus:text-destructive cursor-pointer"
-                    >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Logout
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <button
-                  onClick={() => setShowLoginModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 text-md font-medium text-primary hover:bg-accent rounded-lg transition-colors"
-                >
-                  <LogIn className="w-4 h-4" />
-                  <span className="hidden sm:inline">Login</span>
-                </button>
-              )}
+              {/* User Menu */}
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2 px-4 py-2 text-md font-medium text-foreground hover:bg-accent rounded-lg transition-colors">
+                    <Avatar className="w-8 h-8 shrink-0">
+                      <AvatarImage src={avatarUrl || undefined} alt={firstName} />
+                      <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="hidden sm:inline">{firstName}</span>
+                    <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48 z-[100]">
+                  <DropdownMenuItem 
+                    onClick={() => setShowLogoutDialog(true)}
+                    className="text-destructive focus:text-destructive cursor-pointer"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
@@ -175,7 +165,7 @@ const Header = () => {
         </nav>
       </header>
 
-      <AnimatePresence>{showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}</AnimatePresence>
+      
 
       {/* Logout Confirmation Dialog */}
       <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
