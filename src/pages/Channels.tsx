@@ -7,6 +7,8 @@ import ChannelCard from '@/components/ChannelCard';
 import { FloatingInput } from '@/components/ui/floating-input';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/hooks/useAuth';
+import { getUserJoinedChannelIds } from '@/services/channelService';
 
 interface Channel {
   id: string;
@@ -20,8 +22,10 @@ interface Channel {
 }
 
 const Channels = () => {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [channels, setChannels] = useState<Channel[]>([]);
+  const [joinedChannelIds, setJoinedChannelIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,11 +40,18 @@ const Channels = () => {
       } else {
         setChannels(data || []);
       }
+      
+      // Fetch joined channels if user is logged in
+      if (user) {
+        const ids = await getUserJoinedChannelIds(user.id);
+        setJoinedChannelIds(ids);
+      }
+      
       setLoading(false);
     };
 
     fetchChannels();
-  }, []);
+  }, [user]);
 
   const filterChannels = (channelList: Channel[]) => {
     if (!searchQuery.trim()) return channelList;
@@ -52,6 +63,8 @@ const Channels = () => {
   };
 
   const filteredChannels = filterChannels(channels);
+  const joinedChannels = filteredChannels.filter(c => joinedChannelIds.includes(c.id));
+  const discoverChannels = filteredChannels.filter(c => !joinedChannelIds.includes(c.id));
 
   return (
     <PageTransition>
@@ -95,14 +108,41 @@ const Channels = () => {
           </div>
         )}
 
-        {/* Channels */}
-        {!loading && filteredChannels.length > 0 && (
-          <section>
+        {/* Your Channels */}
+        {!loading && user && joinedChannels.length > 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+          >
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-              All Channels
+              Your Channels
             </h2>
             <div className="space-y-3">
-              {filteredChannels.map((channel, index) => (
+              {joinedChannels.map((channel, index) => (
+                <ChannelCard
+                  key={channel.id}
+                  channel={channel}
+                  delay={index * 0.05}
+                  isJoined
+                />
+              ))}
+            </div>
+          </motion.section>
+        )}
+
+        {/* Discover Channels */}
+        {!loading && discoverChannels.length > 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+              {user && joinedChannels.length > 0 ? 'Discover More' : 'All Channels'}
+            </h2>
+            <div className="space-y-3">
+              {discoverChannels.map((channel, index) => (
                 <ChannelCard
                   key={channel.id}
                   channel={channel}
@@ -110,7 +150,7 @@ const Channels = () => {
                 />
               ))}
             </div>
-          </section>
+          </motion.section>
         )}
 
         {/* Empty state */}

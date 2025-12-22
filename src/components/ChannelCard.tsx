@@ -65,7 +65,9 @@ const ChannelCard = ({ channel, isJoined = false, delay = 0 }: ChannelCardProps)
         <div className="flex items-center gap-2">
           <h3 className="font-semibold text-foreground truncate">{channel.name}</h3>
           {isJoined && (
-            <span className="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
+            <span className="px-1.5 py-0.5 text-[10px] font-medium bg-primary/10 text-primary rounded-md flex-shrink-0">
+              Joined
+            </span>
           )}
         </div>
         <p className="text-sm text-muted-foreground truncate mt-0.5">

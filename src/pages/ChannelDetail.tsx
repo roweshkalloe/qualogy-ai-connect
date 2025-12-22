@@ -1,16 +1,28 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Users, FileText, Blocks, Briefcase, Brain, Coffee, Code, Database, Server } from 'lucide-react';
+import { ArrowLeft, Users, FileText, Blocks, Briefcase, Brain, Coffee, Code, Database, Server, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import PageTransition from '@/components/PageTransition';
-import { getChannelBySlug } from '@/services/channelService';
+import { getChannelBySlug, joinChannel, leaveChannel, isChannelMember } from '@/services/channelService';
 import { getPostsByChannelSlug } from '@/services/postService';
 import { getChannelGuidedPractices, getChannelTools, getChannelPrompts, getChannelShowcases } from '@/data/mockChannelContent';
 import { ChannelWithDetails } from '@/types/database';
 import { Post } from '@/services/postService';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 import ChannelFeedTab from '@/components/channel/ChannelFeedTab';
 import ChannelGuidedTab from '@/components/channel/ChannelGuidedTab';
 import ChannelToolsTab from '@/components/channel/ChannelToolsTab';
@@ -32,11 +44,16 @@ const tabs = [
 const ChannelDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('feed');
   const [channel, setChannel] = useState<ChannelWithDetails | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [joined, setJoined] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+  const [memberCount, setMemberCount] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,10 +67,82 @@ const ChannelDetail = () => {
       
       setChannel(channelData);
       setPosts(postsData);
+      setMemberCount(channelData?.member_count || 0);
+      
+      // Check membership if user is logged in
+      if (user && channelData) {
+        const isMember = await isChannelMember(channelData.id, user.id);
+        setJoined(isMember);
+      }
+      
       setLoading(false);
     };
     fetchData();
-  }, [slug]);
+  }, [slug, user]);
+
+  const handleJoinChannel = async () => {
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to join channels.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!channel) return;
+
+    setIsJoining(true);
+    const success = await joinChannel(channel.id, user.id);
+    
+    if (success) {
+      setJoined(true);
+      setMemberCount(prev => prev + 1);
+      toast({
+        title: "Welcome! 🎉",
+        description: `You've joined ${channel.name}. Start exploring and contributing!`,
+      });
+    } else {
+      toast({
+        title: "Failed to join",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    }
+    setIsJoining(false);
+  };
+
+  const handleLeaveChannel = async () => {
+    if (!user || !channel) return;
+
+    setIsJoining(true);
+    const success = await leaveChannel(channel.id, user.id);
+    
+    if (success) {
+      setJoined(false);
+      setMemberCount(prev => prev - 1);
+      setShowLeaveDialog(false);
+      toast({
+        title: "Left channel",
+        description: `You've left ${channel.name}. You can rejoin anytime.`,
+      });
+    } else {
+      toast({
+        title: "Failed to leave",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    }
+    setIsJoining(false);
+  };
+
+  const handleJoinToggle = () => {
+    if (joined) {
+      setShowLeaveDialog(true);
+    } else {
+      handleJoinChannel();
+    }
+  };
 
   if (loading) {
     return (
@@ -93,10 +182,6 @@ const ChannelDetail = () => {
   const tools = getChannelTools(channel.id);
   const prompts = getChannelPrompts(channel.id);
   const showcases = getChannelShowcases(channel.id);
-
-  const handleJoinToggle = () => {
-    setJoined(!joined);
-  };
 
   return (
     <PageTransition>
@@ -162,7 +247,7 @@ const ChannelDetail = () => {
                 >
                   <span className="flex items-center gap-1">
                     <Users className="w-4 h-4" />
-                    {channel.member_count} members
+                    {memberCount} members
                   </span>
                   <span className="flex items-center gap-1">
                     <FileText className="w-4 h-4" />
@@ -181,8 +266,12 @@ const ChannelDetail = () => {
                 variant={joined ? 'outline' : 'default'}
                 size="lg"
                 onClick={handleJoinToggle}
-                className={joined ? 'border-primary/30 hover:bg-primary/5' : ''}
+                disabled={isJoining}
+                className={joined ? 'border-primary/30 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30' : ''}
               >
+                {isJoining ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : null}
                 {joined ? 'Leave Channel' : 'Join Channel'}
               </Button>
             </motion.div>
@@ -230,6 +319,31 @@ const ChannelDetail = () => {
         </AnimatePresence>
       </div>
     </div>
+
+    {/* Leave Channel Confirmation Dialog */}
+    <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Leave {channel.name}?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to leave this channel? You'll no longer receive updates from this community, but you can rejoin anytime.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isJoining}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleLeaveChannel}
+            disabled={isJoining}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {isJoining ? (
+              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+            ) : null}
+            Leave Channel
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     </PageTransition>
   );
 };
