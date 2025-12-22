@@ -43,11 +43,45 @@ export interface Comment {
 export interface Channel {
   id: string;
   name: string;
+  slug: string;
   description: string;
   icon: string;
   memberCount: number;
   postCount: number;
   color: string;
+}
+
+export interface GuidedPractice {
+  id: string;
+  channelId: string;
+  title: string;
+  description: string;
+  level: 'Beginner' | 'Intermediate' | 'Advanced';
+}
+
+export interface Tool {
+  id: string;
+  channelId: string;
+  name: string;
+  description: string;
+  type: 'Internal' | 'External';
+}
+
+export interface Prompt {
+  id: string;
+  channelId: string;
+  title: string;
+  description: string;
+  prompt: string;
+}
+
+export interface Showcase {
+  id: string;
+  channelId: string;
+  title: string;
+  story: string;
+  role: string;
+  author: string;
 }
 
 export interface Notification {
@@ -81,6 +115,7 @@ export const channels: Channel[] = [
   {
     id: 'channel-1',
     name: 'Mendix Masters',
+    slug: 'mendix-masters',
     description: 'The hub for low-code development, Mendix tips, and best practices',
     icon: 'Blocks',
     memberCount: 156,
@@ -90,6 +125,7 @@ export const channels: Channel[] = [
   {
     id: 'channel-2',
     name: 'UI/UX Design',
+    slug: 'ui-ux-design',
     description: 'Design systems, user research, and creating beautiful interfaces',
     icon: 'Palette',
     memberCount: 89,
@@ -99,6 +135,7 @@ export const channels: Channel[] = [
   {
     id: 'channel-3',
     name: 'Java Jungle',
+    slug: 'java-jungle',
     description: 'JVM deep dives, Spring Boot, microservices architecture',
     icon: 'Coffee',
     memberCount: 203,
@@ -108,6 +145,7 @@ export const channels: Channel[] = [
   {
     id: 'channel-4',
     name: 'Data & AI',
+    slug: 'data-ai',
     description: 'Machine Learning, LLMs, data engineering, and AI applications',
     icon: 'Brain',
     memberCount: 178,
@@ -117,6 +155,7 @@ export const channels: Channel[] = [
   {
     id: 'channel-5',
     name: 'Cloud Native',
+    slug: 'cloud-native',
     description: 'Kubernetes, Docker, AWS, Azure, and cloud architecture',
     icon: 'Cloud',
     memberCount: 134,
@@ -126,6 +165,7 @@ export const channels: Channel[] = [
   {
     id: 'channel-6',
     name: 'HR & People',
+    slug: 'hr-people',
     description: 'People development, culture, and HR innovation',
     icon: 'Users',
     memberCount: 67,
@@ -135,6 +175,7 @@ export const channels: Channel[] = [
   {
     id: 'channel-7',
     name: 'Sales Excellence',
+    slug: 'sales-excellence',
     description: 'Sales strategies, client success, and business development',
     icon: 'TrendingUp',
     memberCount: 54,
@@ -144,6 +185,7 @@ export const channels: Channel[] = [
   {
     id: 'channel-8',
     name: 'Marketing & Growth',
+    slug: 'marketing-growth',
     description: 'Digital marketing, brand building, and growth hacking',
     icon: 'Megaphone',
     memberCount: 72,
@@ -151,6 +193,126 @@ export const channels: Channel[] = [
     color: 'bg-pink-100',
   },
 ];
+
+// Guided Practice content
+export const guidedPractices: GuidedPractice[] = [
+  // Mendix
+  { id: 'gp-1', channelId: 'channel-1', title: 'Building Your First Mendix App', description: 'Step-by-step guide to creating a basic CRUD application with best practices', level: 'Beginner' },
+  { id: 'gp-2', channelId: 'channel-1', title: 'Advanced Domain Modeling', description: 'Learn to design scalable and maintainable domain models', level: 'Advanced' },
+  { id: 'gp-3', channelId: 'channel-1', title: 'Integrating REST APIs', description: 'Connect your Mendix app to external services and APIs', level: 'Intermediate' },
+  // UI/UX
+  { id: 'gp-4', channelId: 'channel-2', title: 'Design System Fundamentals', description: 'Create consistent and reusable design tokens and components', level: 'Beginner' },
+  { id: 'gp-5', channelId: 'channel-2', title: 'User Research Methods', description: 'Conduct effective user interviews and usability testing', level: 'Intermediate' },
+  // Java
+  { id: 'gp-6', channelId: 'channel-3', title: 'Spring Boot Microservices', description: 'Build and deploy production-ready microservices', level: 'Advanced' },
+  { id: 'gp-7', channelId: 'channel-3', title: 'Clean Code with Java', description: 'Write maintainable and testable Java code', level: 'Beginner' },
+  // Data & AI
+  { id: 'gp-8', channelId: 'channel-4', title: 'Prompt Engineering Basics', description: 'Master the art of writing effective AI prompts', level: 'Beginner' },
+  { id: 'gp-9', channelId: 'channel-4', title: 'Fine-tuning LLMs', description: 'Customize language models for your specific use case', level: 'Advanced' },
+  // Cloud
+  { id: 'gp-10', channelId: 'channel-5', title: 'Kubernetes 101', description: 'Deploy and manage containerized applications', level: 'Beginner' },
+  // HR
+  { id: 'gp-11', channelId: 'channel-6', title: 'AI in Recruitment', description: 'Leverage AI tools to streamline hiring processes', level: 'Intermediate' },
+  // Sales
+  { id: 'gp-12', channelId: 'channel-7', title: 'AI-Powered Sales Outreach', description: 'Use AI to personalize and scale your outreach', level: 'Beginner' },
+  // Marketing
+  { id: 'gp-13', channelId: 'channel-8', title: 'AI Content Generation', description: 'Create compelling marketing content with AI assistance', level: 'Beginner' },
+];
+
+// Tool Library
+export const tools: Tool[] = [
+  // Mendix
+  { id: 'tool-1', channelId: 'channel-1', name: 'Mendix Studio Pro', description: 'The main IDE for building Mendix applications', type: 'Internal' },
+  { id: 'tool-2', channelId: 'channel-1', name: 'Mendix Quality Add-on', description: 'Code quality and best practices analyzer', type: 'Internal' },
+  // UI/UX
+  { id: 'tool-3', channelId: 'channel-2', name: 'Figma', description: 'Collaborative design and prototyping tool', type: 'External' },
+  { id: 'tool-4', channelId: 'channel-2', name: 'Qualogy Design System', description: 'Our internal component library and guidelines', type: 'Internal' },
+  // Java
+  { id: 'tool-5', channelId: 'channel-3', name: 'IntelliJ IDEA', description: 'Advanced Java IDE with smart coding assistance', type: 'External' },
+  { id: 'tool-6', channelId: 'channel-3', name: 'SonarQube', description: 'Code quality and security analysis', type: 'Internal' },
+  // Data & AI
+  { id: 'tool-7', channelId: 'channel-4', name: 'Q-AI Assistant', description: 'Internal AI assistant for code and content generation', type: 'Internal' },
+  { id: 'tool-8', channelId: 'channel-4', name: 'Jupyter Notebooks', description: 'Interactive data exploration and modeling', type: 'External' },
+  // Cloud
+  { id: 'tool-9', channelId: 'channel-5', name: 'Azure DevOps', description: 'CI/CD pipelines and project management', type: 'Internal' },
+  { id: 'tool-10', channelId: 'channel-5', name: 'Terraform', description: 'Infrastructure as code for cloud resources', type: 'External' },
+  // HR
+  { id: 'tool-11', channelId: 'channel-6', name: 'HR Analytics Dashboard', description: 'People insights and workforce analytics', type: 'Internal' },
+  // Sales
+  { id: 'tool-12', channelId: 'channel-7', name: 'Salesforce', description: 'CRM and sales pipeline management', type: 'External' },
+  // Marketing
+  { id: 'tool-13', channelId: 'channel-8', name: 'HubSpot', description: 'Marketing automation and analytics', type: 'External' },
+];
+
+// Prompt Library
+export const prompts: Prompt[] = [
+  // Mendix
+  { id: 'prompt-1', channelId: 'channel-1', title: 'Microflow Generator', description: 'Generate Mendix microflow logic from requirements', prompt: 'I need a Mendix microflow that [describe the business logic]. Include error handling and validation steps.' },
+  { id: 'prompt-2', channelId: 'channel-1', title: 'Domain Model Review', description: 'Get AI feedback on your domain model design', prompt: 'Review this Mendix domain model for best practices: [paste your entities and associations]. Suggest improvements for performance and maintainability.' },
+  // UI/UX
+  { id: 'prompt-3', channelId: 'channel-2', title: 'User Persona Creator', description: 'Generate detailed user personas from research', prompt: 'Create a detailed user persona for [target audience] who uses [product type]. Include goals, pain points, and behaviors.' },
+  { id: 'prompt-4', channelId: 'channel-2', title: 'Usability Heuristic Check', description: 'Evaluate designs against Nielsen\'s heuristics', prompt: 'Evaluate this UI against Nielsen\'s 10 usability heuristics: [describe or paste design]. Provide specific improvement suggestions.' },
+  // Java
+  { id: 'prompt-5', channelId: 'channel-3', title: 'Code Review Assistant', description: 'Get comprehensive code review feedback', prompt: 'Review this Java code for clean code principles, SOLID violations, and potential bugs: [paste code]' },
+  { id: 'prompt-6', channelId: 'channel-3', title: 'Unit Test Generator', description: 'Generate JUnit tests for your methods', prompt: 'Generate comprehensive JUnit 5 tests for this method, including edge cases and mocking dependencies: [paste method]' },
+  // Data & AI
+  { id: 'prompt-7', channelId: 'channel-4', title: 'Data Pipeline Designer', description: 'Design ETL pipelines from requirements', prompt: 'Design a data pipeline that: [describe source, transformations, and destination]. Include error handling and monitoring.' },
+  { id: 'prompt-8', channelId: 'channel-4', title: 'Model Evaluation Helper', description: 'Get help interpreting ML model metrics', prompt: 'Help me interpret these model metrics: [paste metrics]. Explain what they mean and suggest improvements.' },
+  // Cloud
+  { id: 'prompt-9', channelId: 'channel-5', title: 'Kubernetes Manifest Generator', description: 'Generate K8s deployment configurations', prompt: 'Generate a Kubernetes deployment manifest for [application description] with [requirements like replicas, resources, probes].' },
+  // HR
+  { id: 'prompt-10', channelId: 'channel-6', title: 'Job Description Writer', description: 'Create compelling job descriptions', prompt: 'Write a job description for [role] at Qualogy. Include responsibilities, requirements, and our culture highlights.' },
+  // Sales
+  { id: 'prompt-11', channelId: 'channel-7', title: 'Proposal Generator', description: 'Draft client proposals and pitches', prompt: 'Draft a proposal for [client name] for [project type]. Highlight our expertise in [technologies] and include timeline and approach.' },
+  // Marketing
+  { id: 'prompt-12', channelId: 'channel-8', title: 'Social Media Post Creator', description: 'Generate engaging social content', prompt: 'Create a LinkedIn post about [topic] for Qualogy. Make it engaging, professional, and include a call to action.' },
+];
+
+// Showcases
+export const showcases: Showcase[] = [
+  // Mendix
+  { id: 'sc-1', channelId: 'channel-1', title: 'Automated Client Onboarding', story: 'Used AI to generate initial domain models and microflows, reducing development time by 60%. The AI suggestions for validation rules saved us countless hours of debugging.', role: 'Senior Mendix Developer', author: 'Rachel Zane' },
+  { id: 'sc-2', channelId: 'channel-1', title: 'Widget Documentation Generator', story: 'Built a tool that automatically generates documentation for custom Mendix widgets using AI. Now our entire widget library is consistently documented.', role: 'Mendix Consultant', author: 'Harvey Specter' },
+  // UI/UX
+  { id: 'sc-3', channelId: 'channel-2', title: 'AI-Assisted Design Reviews', story: 'Integrated AI into our design review process. It now catches accessibility issues and suggests improvements before developer handoff, improving our WCAG compliance significantly.', role: 'UX Designer', author: 'Sarah Connor' },
+  // Java
+  { id: 'sc-4', channelId: 'channel-3', title: 'Legacy Code Modernization', story: 'Used AI to analyze and refactor a 15-year-old Java codebase. Generated comprehensive test coverage and modernized to Spring Boot 3 in half the estimated time.', role: 'Java Architect', author: 'Louis Litt' },
+  // Data & AI
+  { id: 'sc-5', channelId: 'channel-4', title: 'Customer Churn Prediction', story: 'Built an ML model that predicts customer churn with 87% accuracy. The AI-generated explanations help our sales team take proactive action.', role: 'Data Scientist', author: 'Emma Watson' },
+  // Cloud
+  { id: 'sc-6', channelId: 'channel-5', title: 'Zero-Downtime Migration', story: 'Migrated 50+ microservices to Kubernetes using AI-generated manifests and migration scripts. Zero production incidents during the entire process.', role: 'Cloud Engineer', author: 'Mike Ross' },
+  // HR
+  { id: 'sc-7', channelId: 'channel-6', title: 'AI Interview Scheduler', story: 'Built an AI-powered scheduling assistant that coordinates interviews across time zones and availability. Reduced scheduling overhead by 80%.', role: 'HR Manager', author: 'Jessica Pearson' },
+  // Sales
+  { id: 'sc-8', channelId: 'channel-7', title: 'Personalized Proposal System', story: 'Created a system that uses AI to analyze client needs and generate tailored proposals. Win rate increased by 25% in the first quarter.', role: 'Sales Director', author: 'Daniel Hardman' },
+  // Marketing
+  { id: 'sc-9', channelId: 'channel-8', title: 'Content Calendar Automation', story: 'AI now drafts our weekly social media content based on trending topics and company news. Engagement is up 40% while time spent on content creation dropped by half.', role: 'Marketing Lead', author: 'Katrina Bennett' },
+];
+
+// Helper functions for channel details
+export const getChannelBySlug = (slug: string): Channel | undefined => {
+  return channels.find(c => c.slug === slug);
+};
+
+export const getChannelPosts = (channelId: string): Post[] => {
+  return posts.filter(p => p.channelId === channelId);
+};
+
+export const getChannelGuidedPractices = (channelId: string): GuidedPractice[] => {
+  return guidedPractices.filter(gp => gp.channelId === channelId);
+};
+
+export const getChannelTools = (channelId: string): Tool[] => {
+  return tools.filter(t => t.channelId === channelId);
+};
+
+export const getChannelPrompts = (channelId: string): Prompt[] => {
+  return prompts.filter(p => p.channelId === channelId);
+};
+
+export const getChannelShowcases = (channelId: string): Showcase[] => {
+  return showcases.filter(s => s.channelId === channelId);
+};
 
 // Mock posts
 export const posts: Post[] = [
