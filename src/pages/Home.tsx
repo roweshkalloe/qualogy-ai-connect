@@ -1,22 +1,25 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { TrendingUp, Sparkles, Compass, ArrowRight } from "lucide-react";
+import { TrendingUp, Sparkles, Compass, ArrowRight, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
 import PostCard from "@/components/PostCard";
 import { Button } from "@/components/ui/button";
-import { currentUser, getTrendingPosts, getForYouPosts } from "@/data/mockData";
+import { getTrendingPosts, getForYouPosts } from "@/data/mockPosts";
 import { useAuth } from "@/hooks/useAuth";
 
 const greetings = ["Hey", "Hi", "Hello", "Welcome"];
 
+// Mock: In real app, this would come from user's profile/membership data
+const mockJoinedChannelIds: string[] = []; // Empty = no channels joined
+
 const Home = () => {
   const [currentGreeting, setCurrentGreeting] = useState(0);
   const { user } = useAuth();
-  const trendingPosts = getTrendingPosts();
-  const forYouPosts = getForYouPosts(currentUser.id, currentUser.joinedChannels);
   
-  // Get first name from authenticated user
+  const trendingPosts = getTrendingPosts(4);
+  const forYouPosts = getForYouPosts(mockJoinedChannelIds, 6);
+  
   const fullName = user?.user_metadata?.full_name || '';
   const firstName = fullName.split(' ')[0] || 'there';
 
@@ -27,20 +30,18 @@ const Home = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Get unique channels from forYouPosts for grouping indicator
   const forYouChannels = [...new Set(forYouPosts.map(p => p.channelName))];
+  const hasJoinedChannels = mockJoinedChannelIds.length > 0;
 
   return (
     <PageTransition>
       <div className="min-h-screen pt-16 lg:pt-18 pb-20 md:pb-8">
-        {/* Hero Section - Welcoming & Human */}
+        {/* Hero Section */}
         <section className="relative w-full overflow-hidden">
-          {/* Subtle background gradient */}
           <div className="absolute inset-0 bg-gradient-to-b from-accent/20 via-background to-background pointer-events-none" />
           
           <div className="container mx-auto px-4 lg:px-8 py-12 lg:py-16 relative">
             <div className="max-w-3xl mx-auto text-center">
-              {/* Animated greeting */}
               <div className="h-14 lg:h-16 overflow-hidden mb-4">
                 <AnimatePresence mode="wait">
                   <motion.h1
@@ -48,21 +49,15 @@ const Home = () => {
                     initial={{ opacity: 0, y: 40 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -40 }}
-                    transition={{ 
-                      duration: 0.6, 
-                      ease: [0.22, 1, 0.36, 1]
-                    }}
+                    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                     className="text-3xl lg:text-4xl xl:text-5xl font-bold text-foreground tracking-tight"
                   >
                     {greetings[currentGreeting]},{" "}
-                    <span className="text-primary">
-                      {firstName}
-                    </span>
+                    <span className="text-primary">{firstName}</span>
                   </motion.h1>
                 </AnimatePresence>
               </div>
               
-              {/* Purpose-driven subtitle */}
               <motion.p 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -85,7 +80,6 @@ const Home = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.5 }}
             >
-              {/* Section header */}
               <div className="mb-6">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary/10">
@@ -100,7 +94,6 @@ const Home = () => {
                 </p>
               </div>
 
-              {/* Trending cards with special emphasis */}
               <div className="space-y-4">
                 {trendingPosts.map((post, index) => (
                   <motion.div
@@ -110,7 +103,6 @@ const Home = () => {
                     transition={{ delay: 0.3 + index * 0.08, duration: 0.4 }}
                     className="relative"
                   >
-                    {/* Trending indicator badge - positioned inside card */}
                     <div className="absolute right-3 sm:right-4 top-3 sm:top-4 z-10">
                       <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-primary/10 border border-primary/20 backdrop-blur-sm">
                         <TrendingUp className="w-3 h-3 text-primary" />
@@ -136,7 +128,6 @@ const Home = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.5 }}
             >
-              {/* Section header */}
               <div className="mb-6">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-accent">
@@ -150,7 +141,7 @@ const Home = () => {
                   <p className="text-sm text-muted-foreground">
                     Based on your channels
                   </p>
-                  {forYouChannels.length > 0 && (
+                  {hasJoinedChannels && forYouChannels.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mt-1">
                       {forYouChannels.slice(0, 4).map((channel) => (
                         <span 
@@ -170,19 +161,39 @@ const Home = () => {
                 </div>
               </div>
 
-              {/* For You cards */}
-              <div className="grid gap-4 lg:grid-cols-2">
-                {forYouPosts.map((post, index) => (
-                  <motion.div
-                    key={post.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 + index * 0.06, duration: 0.4 }}
-                  >
-                    <PostCard post={post} />
-                  </motion.div>
-                ))}
-              </div>
+              {/* Show empty state if no channels joined */}
+              {!hasJoinedChannels ? (
+                <div className="rounded-2xl bg-gradient-to-br from-secondary/30 to-accent/20 border border-border/50 p-8 text-center">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-muted mx-auto mb-4">
+                    <Users className="w-6 h-6 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                    No channels joined yet
+                  </h3>
+                  <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
+                    Join channels that interest you to see personalized posts here. Explore our channels to get started!
+                  </p>
+                  <Link to="/channels">
+                    <Button className="gap-2">
+                      <Compass className="w-4 h-4" />
+                      Explore Channels
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="grid gap-4 lg:grid-cols-2">
+                  {forYouPosts.map((post, index) => (
+                    <motion.div
+                      key={post.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 + index * 0.06, duration: 0.4 }}
+                    >
+                      <PostCard post={post} />
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </motion.section>
 
             {/* Visual separator */}
@@ -192,7 +203,7 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Explore More Section - Light, inviting */}
+            {/* Explore More Section */}
             <motion.section
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
