@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GB, NL } from "country-flag-icons/react/3x2";
+import { useTranslation } from "react-i18next";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,14 +24,17 @@ const languages: LanguageOption[] = [
 ];
 
 const LanguageToggler = () => {
-  const [selectedLanguage, setSelectedLanguage] = useState<Language>("en");
+  const { i18n } = useTranslation();
+  const [selectedLanguage, setSelectedLanguage] = useState<Language>(
+    (i18n.language as Language) || "en"
+  );
   const [isOpen, setIsOpen] = useState(false);
 
   const currentLanguage = languages.find((l) => l.code === selectedLanguage)!;
 
   const handleLanguageChange = (code: Language) => {
     setSelectedLanguage(code);
-    // Future: Add i18n integration here
+    i18n.changeLanguage(code);
   };
 
   return (

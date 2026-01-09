@@ -1,0 +1,27 @@
+{
+  "nav": {
+    "home": "Home",
+    "channels": "Channels",
+    "profile": "Profile"
+  },
+  "home": {
+    "welcome": "Welcome back",
+    "forYou": "For You",
+    "trending": "Trending",
+    "recent": "Recent"
+  },
+  "common": {
+    "search": "Search",
+    "notifications": "Notifications",
+    "logout": "Log out",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "auth": {
+    "logoutConfirmTitle": "Are you sure you want to log out?",
+    "logoutConfirmDescription": "You will be redirected to the login page."
+  }
+}
