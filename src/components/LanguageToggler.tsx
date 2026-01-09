@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GB, NL } from "country-flag-icons/react/3x2";
 import {
@@ -37,27 +37,18 @@ const LanguageToggler = () => {
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
       <DropdownMenuTrigger asChild>
         <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent/50 hover:bg-accent border border-border/50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="flex items-center justify-center p-2 rounded-lg hover:bg-accent/50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20"
         >
           <motion.div
             key={currentLanguage.code}
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.2 }}
-            className="w-5 h-3.5 rounded-sm overflow-hidden shadow-sm"
+            className="w-7 h-5 rounded-sm overflow-hidden shadow-sm ring-1 ring-border/30"
           >
             <currentLanguage.Flag className="w-full h-full" />
-          </motion.div>
-          <span className="text-sm font-medium text-foreground hidden sm:inline">
-            {currentLanguage.code.toUpperCase()}
-          </span>
-          <motion.div
-            animate={{ rotate: isOpen ? 180 : 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
           </motion.div>
         </motion.button>
       </DropdownMenuTrigger>
@@ -67,7 +58,7 @@ const LanguageToggler = () => {
           <DropdownMenuContent
             align="end"
             sideOffset={8}
-            className="w-44 p-1.5 z-[100] bg-background border border-border shadow-lg rounded-xl overflow-hidden"
+            className="w-44 p-1.5 z-[100] bg-popover border border-border shadow-lg rounded-xl overflow-hidden"
             asChild
           >
             <motion.div
@@ -87,7 +78,7 @@ const LanguageToggler = () => {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-5 h-3.5 rounded-sm overflow-hidden shadow-sm">
+                    <div className="w-6 h-4 rounded-sm overflow-hidden shadow-sm ring-1 ring-border/30">
                       <language.Flag className="w-full h-full" />
                     </div>
                     <span className="text-sm font-medium">{language.label}</span>
