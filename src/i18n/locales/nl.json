@@ -1,0 +1,27 @@
+{
+  "nav": {
+    "home": "Home",
+    "channels": "Kanalen",
+    "profile": "Profiel"
+  },
+  "home": {
+    "welcome": "Welkom terug",
+    "forYou": "Voor jou",
+    "trending": "Trending",
+    "recent": "Recent"
+  },
+  "common": {
+    "search": "Zoeken",
+    "notifications": "Meldingen",
+    "logout": "Uitloggen",
+    "cancel": "Annuleren",
+    "confirm": "Bevestigen",
+    "save": "Opslaan",
+    "edit": "Bewerken",
+    "delete": "Verwijderen"
+  },
+  "auth": {
+    "logoutConfirmTitle": "Weet je zeker dat je wilt uitloggen?",
+    "logoutConfirmDescription": "Je wordt doorgestuurd naar de inlogpagina."
+  }
+}
