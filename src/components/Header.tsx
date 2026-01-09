@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Bell, LogOut, Home, Grid3X3, User, ChevronDown } from "lucide-react";
+import LanguageToggler from "./LanguageToggler";
 import { motion, AnimatePresence } from "framer-motion";
 import qualologyLogo from "@/assets/qualogy-logo.png";
 import NotificationsPopup from "./NotificationsPopup";
@@ -101,7 +102,10 @@ const Header = () => {
             </nav>
 
             {/* Right side actions */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
+              {/* Language Toggler */}
+              <LanguageToggler />
+
               {/* Notifications */}
               <div className="relative">
                 <button
