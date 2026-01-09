@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronDown, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { GB, NL } from "country-flag-icons/react/3x2";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,12 +14,12 @@ type Language = "en" | "nl";
 interface LanguageOption {
   code: Language;
   label: string;
-  flag: string;
+  Flag: typeof GB;
 }
 
 const languages: LanguageOption[] = [
-  { code: "en", label: "English", flag: "🇬🇧" },
-  { code: "nl", label: "Nederlands", flag: "🇳🇱" },
+  { code: "en", label: "English", Flag: GB },
+  { code: "nl", label: "Nederlands", Flag: NL },
 ];
 
 const LanguageToggler = () => {
@@ -40,15 +41,15 @@ const LanguageToggler = () => {
           whileTap={{ scale: 0.98 }}
           className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent/50 hover:bg-accent border border-border/50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20"
         >
-          <motion.span
-            key={currentLanguage.flag}
+          <motion.div
+            key={currentLanguage.code}
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.2 }}
-            className="text-lg leading-none"
+            className="w-5 h-3.5 rounded-sm overflow-hidden shadow-sm"
           >
-            {currentLanguage.flag}
-          </motion.span>
+            <currentLanguage.Flag className="w-full h-full" />
+          </motion.div>
           <span className="text-sm font-medium text-foreground hidden sm:inline">
             {currentLanguage.code.toUpperCase()}
           </span>
@@ -86,7 +87,9 @@ const LanguageToggler = () => {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-lg leading-none">{language.flag}</span>
+                    <div className="w-5 h-3.5 rounded-sm overflow-hidden shadow-sm">
+                      <language.Flag className="w-full h-full" />
+                    </div>
                     <span className="text-sm font-medium">{language.label}</span>
                   </div>
                   {selectedLanguage === language.code && (
