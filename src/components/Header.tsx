@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Bell, LogOut, Home, Grid3X3, User, ChevronDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import LanguageToggler from "./LanguageToggler";
 import ThemeToggler from "./ThemeToggler";
 import { motion, AnimatePresence } from "framer-motion";
@@ -28,6 +29,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const Header = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
@@ -63,9 +65,9 @@ const Header = () => {
   }, [user]);
 
   const navItems = [
-    { path: "/home", label: "Home", icon: Home },
-    { path: "/channels", label: "Channels", icon: Grid3X3 },
-    { path: "/profile", label: "Profile", icon: User },
+    { path: "/home", labelKey: "nav.home", icon: Home },
+    { path: "/channels", labelKey: "nav.channels", icon: Grid3X3 },
+    { path: "/profile", labelKey: "nav.profile", icon: User },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -97,7 +99,7 @@ const Header = () => {
                   }`}
                 >
                   <item.icon className="w-4 h-4" />
-                  {item.label}
+                  {t(item.labelKey)}
                 </Link>
               ))}
             </nav>
@@ -146,7 +148,7 @@ const Header = () => {
                     className="text-destructive focus:text-destructive cursor-pointer"
                   >
                     <LogOut className="w-4 h-4 mr-2" />
-                    Logout
+                    {t("common.logout")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -166,7 +168,7 @@ const Header = () => {
                 }`}
               >
                 <item.icon className={`w-5 h-5 ${isActive(item.path) ? "text-primary" : ""}`} />
-                {item.label}
+                {t(item.labelKey)}
               </Link>
             ))}
           </div>
@@ -179,15 +181,15 @@ const Header = () => {
       <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure you want to logout?</AlertDialogTitle>
+            <AlertDialogTitle>{t("auth.logoutConfirmTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              You will be signed out of your account and redirected to the home page.
+              {t("auth.logoutConfirmDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleSignOut}>
-              Logout
+              {t("common.logout")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
